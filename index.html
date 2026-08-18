@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hughes Living Auctions — repaired furniture, sold by the lot</title>
+<meta name="description" content="Furniture, household goods and odd lots bought by the pallet, repaired on the bench, and auctioned with the damage printed on the tag.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='3' fill='%23814037'/%3E%3Ccircle cx='16' cy='9' r='3.2' fill='%23FBF6EE'/%3E%3Crect x='7' y='17' width='18' height='2' fill='%23FBF6EE'/%3E%3Crect x='7' y='22' width='11' height='2' fill='%23FBF6EE'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#lots">Skip to the live lots</a>
+
+<header class="masthead">
+  <div class="wrap masthead__in">
+    <a class="mark" href="#top">
+      <span class="mark__seal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9.6 2.5h9.9a2 2 0 0 1 2 2v9.9a2 2 0 0 1-.6 1.4l-5.1 5.1a2 2 0 0 1-2.8 0L3.6 12.1a2 2 0 0 1 0-2.8l4.6-6.1z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="16.8" cy="7.2" r="1.9" fill="currentColor"/></svg></span>
+      <span class="mark__txt">
+        <span class="mark__a">Hughes Living</span>
+        <span class="mark__b">AUCTIONS</span>
+      </span>
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="#lots">Live lots</a>
+      <a href="#tag">The tag</a>
+      <a href="#protection">Protection</a>
+      <a href="#bidding">Bidding &amp; pickup</a>
+      <a href="#closed">Closed</a>
+    </nav>
+    <span class="paddle">PADDLE <b id="paddleNo">—</b></span>
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="mobnav" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="wrap"><div class="mobnav" id="mobnav">
+    <a href="#lots">Live lots</a>
+    <a href="#tag">The tag</a>
+    <a href="#protection">Protection</a>
+    <a href="#bidding">Bidding &amp; pickup</a>
+    <a href="#closed">Closed</a>
+    <span class="paddle">PADDLE <b id="paddleNo2">—</b></span>
+  </div></div>
+</header>
+
+<main id="top">
+
+  <!-- HERO: the thesis is a lot in progress, not a slogan -->
+  <section class="hero">
+    <div class="wrap hero__grid">
+      <div>
+        <p class="eyebrow">Bidding open &middot; Pallet 0442 &amp; 0447</p>
+        <h1>Nothing here<br>arrived <em>perfect.</em></h1>
+        <p>We buy returns, freight damage and short-parts furniture by the pallet, fix it on the bench, and open it at a dollar. What was wrong with your piece is printed on its tag, along with what we did about it and what we could not.</p>
+        <div class="hero__acts">
+          <a class="btn" href="#lots">See what is open</a>
+          <a class="btn btn--ghost" href="#tag">How a lot gets graded</a>
+        </div>
+      </div>
+
+      <article class="tag tag--feature" id="feature" data-lot="118">
+        <span class="tag__punch" aria-hidden="true"></span>
+        <div class="tag__head">
+          <span class="tag__id">LOT 118</span>
+          <span class="live">Bidding now</span>
+          <button class="watch" type="button" data-watch="118" aria-pressed="false" aria-label="Watch lot 118">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg>
+          </button>
+        </div>
+        <div class="tag__photo">
+          <img src="img/lot-sectional.jpg" alt="Green velvet double chaise sectional, photographed from the front left." width="1000" height="723" fetchpriority="high">
+          <span class="grade grade--b">Grade B</span>
+        </div>
+        <div class="tag__body">
+          <p class="tag__cat">Sectional &middot; Pallet 0442 &middot; 118 in.</p>
+          <h2 class="tag__title">Ariana Double Chaise Sectional, Green Velvet</h2>
+          <p class="tag__retail">Retail <s>$2,499</s> &middot; 4 boxes, freight-damaged carton</p>
+          <dl class="ledger">
+            <div class="ledger__row"><dt>Found</dt><dd>Right chaise seam split about nine inches. Carton crushed on one end in transit.</dd></div>
+            <div class="ledger__row is-fixed"><dt>Fixed</dt><dd>Seam restitched in matching thread, frame checked square, all legs re-torqued.</dd></div>
+            <div class="ledger__row is-flaw"><dt>Still</dt><dd>A faint crease in the velvet along the repair. You see it in raking light, not head on.</dd></div>
+          </dl>
+        </div>
+        <div class="stub">
+          <div class="stub__bid">
+            <span class="lbl">Current bid</span>
+            <span class="amt" data-amt>$640</span>
+            <span class="meta" data-bids>23 bids</span>
+          </div>
+          <div class="stub__clock" data-clock>
+            <span class="lbl">Closes in</span>
+            <time datetime="">--:--:--</time>
+          </div>
+          <p class="mine-flag">You hold this lot</p>
+          <div class="stub__acts">
+            <button class="btn" type="button" data-bid="118">Place bid</button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- a real sequence, so the arrows mean something -->
+  <div class="path">
+    <div class="wrap path__in">
+      <span class="path__lbl">Every lot walks this</span>
+      <span class="path__step"><b>01</b> Pallet bought</span><span class="path__arw" aria-hidden="true">&rarr;</span>
+      <span class="path__step"><b>02</b> Triaged</span><span class="path__arw" aria-hidden="true">&rarr;</span>
+      <span class="path__step"><b>03</b> Parts sourced</span><span class="path__arw" aria-hidden="true">&rarr;</span>
+      <span class="path__step"><b>04</b> Bench repair</span><span class="path__arw" aria-hidden="true">&rarr;</span>
+      <span class="path__step"><b>05</b> Graded</span><span class="path__arw" aria-hidden="true">&rarr;</span>
+      <span class="path__step"><b>06</b> Opens at $1</span>
+    </div>
+  </div>
+
+  <!-- LIVE LOTS -->
+  <section class="band" id="lots">
+    <div class="wrap">
+      <div class="band__head rise">
+        <h2 class="sect-title">Open lots</h2>
+        <p class="lede">Twelve more pieces off the same two pallets. Each opened at a dollar and closes on its own clock. Bid in the last two minutes and the clock pushes out two more.</p>
+      </div>
+
+      <div class="rail" role="group" aria-label="Filter lots">
+        <button class="chip" type="button" data-filter="all" aria-pressed="true">All lots</button>
+        <button class="chip" type="button" data-filter="soon" aria-pressed="false">Closing today</button>
+        <button class="chip" type="button" data-filter="buy" aria-pressed="false">Buy it now</button>
+        <button class="chip" type="button" data-filter="clean" aria-pressed="false">Grade A</button>
+        <button class="chip" type="button" data-filter="watch" aria-pressed="false">Watching</button>
+        <span class="rail__count" id="lotCount"></span>
+      </div>
+
+      <div class="lots" id="lotGrid"></div>
+      <p class="lots__empty" id="lotEmpty" hidden>No lots match that filter right now.</p>
+    </div>
+  </section>
+
+  <!-- THE TAG: signature explainer -->
+  <section class="band band--raise" id="tag">
+    <div class="wrap">
+      <div class="band__head rise">
+        <h2 class="sect-title">What the tag tells you</h2>
+        <p class="lede">A wired manila tag hangs on every piece in the shop and follows it to the listing. It is the same tag the bench tech filled out, transcribed word for word.</p>
+      </div>
+
+      <div class="anat">
+        <div class="anat__notes rise">
+          <div class="note">
+            <span class="note__key">Top<br>left</span>
+            <div>
+              <h3>Lot number and pallet of origin</h3>
+              <p>Every lot names the pallet it came off. Buy two lots from pallet 0442 and they were unwrapped on the same morning, which usually means one trip to pick both up.</p>
+            </div>
+          </div>
+          <div class="note">
+            <span class="note__key">On the<br>photo</span>
+            <div>
+              <h3>The grade stamp</h3>
+              <p>Stamped by the tech who signed off the repair, not by whoever wrote the listing. The rubric below is the whole rubric.</p>
+            </div>
+          </div>
+          <div class="note">
+            <span class="note__key">Middle<br>block</span>
+            <div>
+              <h3>Found, fixed, still</h3>
+              <p>Three lines. What was wrong when it hit the bench, what we did, and what we did not get all the way back. The third line is the one worth reading.</p>
+            </div>
+          </div>
+          <div class="note">
+            <span class="note__key">Tear-off<br>stub</span>
+            <div>
+              <h3>The tear-off stub</h3>
+              <p>The bid half. Current price, bid count and the clock. When a lot closes, the stub prints as the pickup slip you show at the dock.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rise">
+          <table class="rubric">
+            <caption>Grade rubric</caption>
+            <thead>
+              <tr><th scope="col">Grade</th><th scope="col">What it means</th><th scope="col">Protection</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row" class="g-a">A</th>
+                <td>Functionally new. Opened box, floor sample or a return that was never assembled. Nothing was repaired.</td>
+                <td>Available</td>
+              </tr>
+              <tr>
+                <th scope="row">B</th>
+                <td>Repaired and sound. A trace of the fix may be findable if you look for it, and the tag says where.</td>
+                <td>Available</td>
+              </tr>
+              <tr>
+                <th scope="row" class="g-c">C</th>
+                <td>Repaired and sound, with a flaw you will see from across the room. Priced accordingly.</td>
+                <td>Available</td>
+              </tr>
+              <tr>
+                <th scope="row">D</th>
+                <td>Parts or project. Sold exactly as it sits, usually incomplete. We will tell you what is missing.</td>
+                <td>Not offered</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROTECTION -->
+  <section class="band" id="protection">
+    <div class="wrap">
+      <div class="band__head rise">
+        <h2 class="sect-title">Bench protection</h2>
+        <p class="lede">Optional coverage you can add on the bid sheet for grades A through C. It covers our repair, for ninety days. Here is the entire policy.</p>
+      </div>
+
+      <div class="cover rise">
+        <div class="cover__col cover__col--yes">
+          <h3>Covered for 90 days</h3>
+          <ul>
+            <li>The fault we repaired, if it comes back. Same seam, same mechanism, same joint.</li>
+            <li>Reclining, lifting and swivel mechanisms on any lot we serviced.</li>
+            <li>Electrical work we performed, including rewired lamps and power units.</li>
+            <li>Joinery we glued, doweled or re-drilled.</li>
+            <li>Your choice when we cannot fix it twice: full refund or an equal lot from an open pallet.</li>
+          </ul>
+        </div>
+        <div class="cover__col cover__col--no">
+          <h3>Not covered, ever</h3>
+          <ul>
+            <li>Anything printed on the &ldquo;still&rdquo; line of the tag. You bought that flaw on purpose.</li>
+            <li>Stains, tears and pet damage that happen after pickup.</li>
+            <li>Damage in your vehicle or in your doorway. Measure first.</li>
+            <li>Grade D lots. Those are sold as parts and cannot be covered.</li>
+            <li>Normal wear, and any repair made by someone other than our bench.</li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="price-note rise">Protection runs <b>6%</b> of the hammer price, <b>$8</b> minimum, added at checkout. On a $260 sectional that is $15.60. Decline it and nothing else about the lot changes &mdash; there is no second price.</p>
+    </div>
+  </section>
+
+  <!-- BIDDING -->
+  <section class="band band--raise" id="bidding">
+    <div class="wrap">
+      <div class="band__head rise">
+        <h2 class="sect-title">Bidding and pickup</h2>
+        <p class="lede">Proxy bidding, published increments, and a clock that will not let anyone steal a lot in the last three seconds.</p>
+      </div>
+
+      <div class="mech">
+        <div class="rules rise">
+          <div class="rule">
+            <h3>Bid your maximum, not your next step</h3>
+            <p>Enter the most you would pay. We bid the smallest amount needed to keep you in front, and stop at your number. Nobody sees your maximum, including us, until it is beaten.</p>
+          </div>
+          <div class="rule rule--flag">
+            <h3>The two-minute rule</h3>
+            <p>Any bid inside the final two minutes pushes the close out by two more. A lot ends when two full minutes pass with nobody willing to go higher. Sniping does not work here.</p>
+          </div>
+          <div class="rule">
+            <h3>Buy it now until the first bid</h3>
+            <p>Some lots carry a buy-it-now price. It stays live until somebody bids, then it comes off and the lot runs to the clock.</p>
+          </div>
+          <div class="rule">
+            <h3>Pay at close, pick up within four days</h3>
+            <p>Card on file is charged when the clock stops. Bring help and a truck &mdash; we load, you strap. Local delivery is quoted per lot before you bid; ask on the lot page.</p>
+          </div>
+        </div>
+
+        <div class="rise">
+          <table class="incr">
+            <caption>Bid increments</caption>
+            <thead>
+              <tr><th scope="col">Current price</th><th scope="col">Next bid rises by</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>$1 &ndash; $49</td><td>$5</td></tr>
+              <tr><td>$50 &ndash; $249</td><td>$10</td></tr>
+              <tr><td>$250 &ndash; $999</td><td>$25</td></tr>
+              <tr><td>$1,000 and up</td><td>$50</td></tr>
+            </tbody>
+          </table>
+          <table class="incr" style="margin-top:2.5rem">
+            <caption>The fine print, in full</caption>
+            <tbody>
+              <tr><td>Buyer premium</td><td>None</td></tr>
+              <tr><td>Reserve prices</td><td>None. Every lot opens at $1</td></tr>
+              <tr><td>Pickup window</td><td>4 days from close</td></tr>
+              <tr><td>Storage after that</td><td>$5 per lot per day</td></tr>
+              <tr><td>Returns</td><td>Only under bench protection</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLOSED -->
+  <section class="band" id="closed">
+    <div class="wrap">
+      <div class="band__head rise">
+        <h2 class="sect-title">What closed last week</h2>
+        <p class="lede">Hammer prices from pallets 0431 and 0436, with the reason each piece was on our floor instead of a showroom.</p>
+      </div>
+      <table class="results rise">
+        <thead>
+          <tr>
+            <th scope="col">Lot</th><th scope="col">Retail</th><th scope="col">Hammer</th><th scope="col">Why it was here</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Kanlow rocker recliner, nutmeg</td><td>$729</td><td>$185</td><td>Handle snapped in the box. New handle and cable, cycled 40 times.</td></tr>
+          <tr><td>6-drawer dresser with mirror</td><td>$1,149</td><td>$310</td><td>Shipped with no pulls and no mirror hardware. Full set sourced.</td></tr>
+          <tr><td>Shaggy area rug, 5 &times; 7</td><td>$219</td><td>$45</td><td>Returned with pet hair and a folded corner. Cleaned and blocked flat.</td></tr>
+          <tr><td>Counter table and four stools</td><td>$899</td><td>$265</td><td>One stool had a cracked footrest weld. Re-run and repainted.</td></tr>
+          <tr><td>Queen panel headboard</td><td>$449</td><td>$70</td><td>Headboard only, no rails. Sold to a buyer who had a frame.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__grid">
+      <div>
+        <a class="mark" href="#top">
+          <span class="mark__seal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9.6 2.5h9.9a2 2 0 0 1 2 2v9.9a2 2 0 0 1-.6 1.4l-5.1 5.1a2 2 0 0 1-2.8 0L3.6 12.1a2 2 0 0 1 0-2.8l4.6-6.1z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="16.8" cy="7.2" r="1.9" fill="currentColor"/></svg></span>
+          <span class="mark__txt">
+            <span class="mark__a">Hughes Living</span>
+            <span class="mark__b">AUCTIONS</span>
+          </span>
+        </a>
+        <p class="foot__note">The repair bench behind Hughes Living Co. Pallets come in Tuesday, lots open Friday, everything closes Sunday night.</p>
+      </div>
+      <div>
+        <h4>Auction</h4>
+        <ul>
+          <li><a href="#lots">Open lots</a></li>
+          <li><a href="#closed">Closed results</a></li>
+          <li><a href="#tag">Grade rubric</a></li>
+          <li><a href="#bidding">Increments and rules</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>The shop</h4>
+        <ul>
+          <li><a href="#bidding">Pickup and delivery</a></li>
+          <li><a href="#protection">Bench protection</a></li>
+          <li><a href="https://hugheslivingco.com">Hughes Living Co. store</a></li>
+          <li><a href="mailto:auctions@hugheslivingco.com">auctions@hugheslivingco.com</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot__base">
+      <span>&copy; 2026 Hughes Living Co.</span>
+      <span>Lots sold as described on the tag</span>
+    </div>
+  </div>
+</footer>
+
+<!-- bid sheet -->
+<dialog class="sheet" id="bidSheet" aria-labelledby="sheetTitle">
+  <form method="dialog" id="bidForm" class="sheet__in" novalidate>
+    <div class="sheet__top">
+      <div>
+        <span class="sheet__lot" id="sheetLot">LOT</span>
+        <h2 id="sheetTitle">Lot title</h2>
+      </div>
+      <button class="x" type="button" id="sheetClose" aria-label="Close bid sheet">&times;</button>
+    </div>
+
+    <div class="sheet__now">
+      <span id="sheetNow">Current bid $0 &middot; 0 bids</span>
+      <span id="sheetLeft">--:--</span>
+    </div>
+
+    <div class="field">
+      <label for="maxBid">Your maximum bid</label>
+      <input type="number" id="maxBid" inputmode="decimal" step="1" min="0" autocomplete="off">
+      <p class="hint" id="minHint">Minimum next bid $0</p>
+    </div>
+
+    <label class="opt" for="protect">
+      <input type="checkbox" id="protect" checked>
+      <span>Add bench protection &mdash; <b id="protectCost">$8.00</b>. Ninety days on the repair described on this tag.</span>
+    </label>
+
+    <div class="sheet__total">
+      <span>If you win at your maximum</span>
+      <span id="sheetTotal">$0.00</span>
+    </div>
+
+    <p class="sheet__err" id="sheetErr" role="alert"></p>
+    <button class="btn btn--block" type="submit" id="sheetSubmit">Confirm bid</button>
+    <p class="sheet__fine">Bids are commitments. A bid placed in the final two minutes extends the clock by two minutes for everyone.</p>
+  </form>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>

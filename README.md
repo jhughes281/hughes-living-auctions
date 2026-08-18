@@ -1,0 +1,66 @@
+# Hughes Living Auctions
+
+Auction front end for the pallet side of Hughes Living Co. — furniture, household goods
+and odd lots bought by the pallet (customer returns, freight damage, short parts), repaired
+on the bench, then sold at auction or buy-it-now with optional coverage.
+
+Local preview: port **8753** (`hla-auctions` in `~/.claude/launch.json`).
+
+## The idea
+
+Every lot is presented as the manila inspection tag the bench tech filled out, and the tag
+carries a three-line **condition ledger**:
+
+| Line | What it says |
+|---|---|
+| Found | What was wrong when it hit the bench |
+| Fixed | What we did about it |
+| Still | What we did not get all the way back |
+
+The "still" line is the point. On a damaged-goods auction, publishing the remaining flaw is
+what makes the rest of the listing believable.
+
+## Files
+
+- `index.html` — page, hero lot (118) is in the markup; the rest render from JS
+- `styles.css` — tokens at the top, lifted from the live hugheslivingco.com Shopify theme
+  so the two sites read as one company:
+
+  | Auction token | Value | Store token |
+  |---|---|---|
+  | `--ground` | `#FBF6EE` | `--color-background` |
+  | `--card` | `#FFFFFF` | `--color-base-background` |
+  | `--ink` / `--ink-2` | `#000000` / `#545454` | `--color-foreground` / `--color-foreground2` |
+  | `--accent` | `#814037` | `--color-accent` |
+  | `--flag` | `#FC5732` | `--color-on-sale-badge-background` |
+  | `--verdict` | `#3D7A40` | `--color-success-text` (darkened for AA) |
+  | buttons | black fill, 3px radius | `--color-button`, `--rounded-button` |
+  | cards | 0 radius | `--rounded-product-card` |
+
+  Type is **Albert Sans**, the store's face. DM Mono is kept only for auction machine data —
+  lot numbers, prices, and countdowns, where digits need to hold their width.
+
+  Two store values were darkened to clear WCAG AA at small sizes: muted text `#868686` → `#707070`
+  and success green `#428445` → `#3D7A40`. The sale red `#FC5732` is used as a fill only; small
+  red text uses `#C93C19`.
+- `app.js` — lot data + auction engine
+- `img/` — lot photos, pulled from the Hughes Living product library and downscaled to 1000px
+
+## What the engine does
+
+- Per-lot countdowns; the clock turns red inside the final hour and reads `Closed` at zero
+- Proxy bidding — you enter a maximum, the lot advances only to the next increment
+- Published increments: $5 under $50, $10 to $249, $25 to $999, $50 above
+- **Two-minute rule** — a bid inside the final two minutes pushes the close out two minutes
+- Buy-it-now, removed from a lot as soon as it takes a bid
+- Bench protection priced at 6% of the bid, $8 minimum, computed live in the bid sheet
+- Watchlist and paddle number persist in `localStorage`
+
+## Before this goes live
+
+Bids run in the page — there is no server, so nothing is recorded and the prices reset on
+reload. Real bidding needs a backend (or an auction platform) behind the same front end.
+
+Placeholder content to replace: lot inventory and prices, the closed-results table, pickup
+address and hours, `auctions@hugheslivingco.com`, and the protection terms — those need to
+match whatever you can actually stand behind.
