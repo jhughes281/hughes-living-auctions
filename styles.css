@@ -63,16 +63,12 @@ button{ font:inherit; color:inherit; }
   border-bottom:1px solid var(--line);
 }
 @supports (backdrop-filter: blur(4px)){ .masthead{ backdrop-filter:saturate(140%) blur(6px); } }
-.masthead__in{ display:flex; align-items:center; gap:1.25rem; min-height:66px; }
-.mark{ display:flex; align-items:center; gap:.7rem; text-decoration:none; margin-right:auto; }
-.mark__seal{
-  width:30px; height:30px; flex:none; border-radius:50%;
-  background:var(--accent); display:grid; place-items:center; color:var(--ground);
-}
-.mark__seal svg{ width:16px; height:16px; }
-.mark__txt{ display:flex; flex-direction:column; line-height:1; }
-.mark__a{ font-family:var(--f-body); font-weight:500; font-size:1.02rem; color:var(--ink); letter-spacing:-.01em; }
-.mark__b{ font-family:var(--f-data); font-size:.6rem; letter-spacing:.28em; color:var(--accent); margin-top:.36rem; }
+.masthead__in{ display:flex; align-items:center; gap:1.25rem; min-height:74px; }
+.mark{ display:flex; align-items:center; margin-right:auto; text-decoration:none; }
+/* real EB Garamond lockup, sized by height — logo ink is #3F3B33 from the source file */
+.mark__logo{ height:44px; width:auto; display:block; }
+.mark--foot .mark__logo{ height:104px; }
+@media (min-width:900px){ .mark__logo{ height:48px; } }
 
 .nav{ display:none; gap:1.6rem; }
 .nav a{ text-decoration:none; font-size:.87rem; color:var(--ink-2); padding-block:.35rem; border-bottom:1px solid transparent; }
@@ -373,6 +369,7 @@ button{ font:inherit; color:inherit; }
 .foot{ border-top:1px solid var(--line); padding-block:3.5rem 2.5rem; background:var(--card); }
 .foot__grid{ display:grid; gap:2.5rem; }
 @media (min-width:800px){ .foot__grid{ grid-template-columns:1.4fr 1fr 1fr; gap:3rem; } }
+.mark--foot{ display:block; margin-bottom:1.2rem; }
 .foot h4{ font-family:var(--f-data); font-size:.64rem; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin:0 0 1rem; }
 .foot ul{ list-style:none; margin:0; padding:0; display:grid; gap:.6rem; font-size:.9rem; }
 .foot a{ text-decoration:none; color:var(--ink-2); }
@@ -387,6 +384,7 @@ button{ font:inherit; color:inherit; }
 /* ---------- touch sizing: nothing tappable under 44px ---------- */
 @media (pointer: coarse), (max-width: 899px){
   .mark{ padding-block:.5rem; }
+  .mark__logo{ height:40px; }
   .burger{ width:44px; height:44px; justify-content:center; align-content:center; justify-items:center; }
   .watch{ width:44px; height:44px; }
   .watch svg{ width:17px; height:17px; }
