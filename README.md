@@ -6,6 +6,60 @@ on the bench, then sold at auction or buy-it-now with optional coverage.
 
 Local preview: port **8753** (`hla-auctions` in `~/.claude/launch.json`).
 
+## Running it
+
+The site talks to one of three engines, chosen in `config.js`. It never decides an auction
+question itself — prices, minimums, extensions and who is leading all come from the engine.
+
+| Backend | What answers a bid | When |
+|---|---|---|
+| `demo` | the page, against `lots-demo.json` | static hosting with no database. Says so on screen. |
+| `local` | Postgres, via `server/` | development on this machine |
+| `supabase` | the same Postgres, hosted | production |
+
+### Local, with the real engine
+
+Needs Node. It does **not** need Postgres installed — `embedded-postgres` ships the binaries.
+
+```
+npm install
+npm run pg       # Postgres on 5433, in its own terminal
+npm run db       # migrations + seed, writes lots-demo.json
+npm run serve    # http://127.0.0.1:8754
+```
+
+`config.js` selects the `local` backend automatically when the page is served from port 8754.
+Sign-in there is passwordless on purpose: it exists so you can open two browsers and bid
+against yourself. It is not authentication, the server refuses to bind anywhere but loopback,
+and Supabase Auth replaces it in production.
+
+### Tests
+
+```
+npm test
+```
+
+52 assertions: the published rules, what anon and a signed-in bidder can read, and a race
+suite that fires 20 real connections at one lot and checks that nothing is lost, exactly one
+bidder leads, the cached price still equals the derived price, and ten simultaneous bids
+inside the two-minute window leave two minutes rather than twenty.
+
+`test/run.sh` and `test/02_race_test.sh` are the original bash + psql versions. They need a
+`psql` on PATH; `run-tests.mjs` does the same work over the wire and does not.
+
+### Going to Supabase
+
+1. Create a project, then run `supabase/migrations/0001`, `0002` and `supabase/seed.sql`.
+2. Put the project URL and the **anon** key in `config.js` and set `backend` to `'supabase'`.
+
+The anon key is meant to be public — row level security is what restricts it, and the engine
+was written for exactly that: `bids` is readable only by its owner, and column grants keep
+`reserve_cents` and `high_bidder` off `lots` entirely. The **service_role** key bypasses all
+of it and must never appear in this repo or anywhere the browser can see.
+
+See `docs-auction-core.md` for the engine's design and the list of what it deliberately does
+not do yet.
+
 ## The idea
 
 Every lot is presented as the manila inspection tag the bench tech filled out, and the tag

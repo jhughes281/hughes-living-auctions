@@ -403,3 +403,22 @@ button{ font:inherit; color:inherit; }
   .rise{ opacity:0; transform:translateY(14px); }
   .rise.is-in{ opacity:1; transform:none; transition:opacity .6s ease, transform .6s cubic-bezier(.2,.7,.3,1); }
 }
+
+/* ---------- honest label on the no-server build ---------- */
+.demo-note{
+  font-family:var(--f-data); font-size:.78rem; line-height:1.5; color:var(--ink-2);
+  background:var(--card); border:1px solid var(--line); border-left:3px solid var(--flag);
+  padding:.85rem 1.1rem; margin:0 0 1.4rem;
+}
+
+/* ---------- bid result / live region ---------- */
+.live-note{
+  position:fixed; left:50%; bottom:1.25rem; transform:translate(-50%, 140%);
+  z-index:60; margin:0; max-width:min(34rem, calc(100vw - 2rem));
+  background:var(--ink); color:var(--card);
+  font-family:var(--f-data); font-size:.82rem; line-height:1.45;
+  padding:.85rem 1.2rem; border-radius:var(--r-btn);
+  transition:transform .3s cubic-bezier(.2,.7,.3,1);
+}
+.live-note.is-up{ transform:translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce){ .live-note{ transition:none; } }

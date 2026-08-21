@@ -1,0 +1,16 @@
+{
+  "name": "hughes-living-auctions",
+  "private": true,
+  "type": "module",
+  "description": "Auction site for the pallet side of Hughes Living Co.",
+  "scripts": {
+    "pg": "node test/boot-pg.mjs",
+    "db": "node server/setup-db.mjs",
+    "serve": "node server/server.mjs",
+    "test": "node test/run-tests.mjs"
+  },
+  "devDependencies": {
+    "embedded-postgres": "^18.4.0-beta.17",
+    "pg": "^8.13.0"
+  }
+}

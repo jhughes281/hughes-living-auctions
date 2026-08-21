@@ -31,7 +31,7 @@
       <a href="#bidding">Bidding &amp; pickup</a>
       <a href="#closed">Closed</a>
     </nav>
-    <span class="paddle">PADDLE <b id="paddleNo">—</b></span>
+    <button class="paddle" type="button" id="paddleBtn"><span id="paddleLabel">Sign in</span> <b id="paddleNo"></b></button>
     <button class="burger" id="burger" aria-expanded="false" aria-controls="mobnav" aria-label="Open menu">
       <span></span><span></span><span></span>
     </button>
@@ -42,7 +42,7 @@
     <a href="#protection">Protection</a>
     <a href="#bidding">Bidding &amp; pickup</a>
     <a href="#closed">Closed</a>
-    <span class="paddle">PADDLE <b id="paddleNo2">—</b></span>
+    <button class="paddle" type="button" id="paddleBtn2"><span id="paddleLabel2">Sign in</span> <b id="paddleNo2"></b></button>
   </div></div>
 </header>
 
@@ -96,7 +96,7 @@
           </div>
           <p class="mine-flag">You hold this lot</p>
           <div class="stub__acts">
-            <button class="btn" type="button" data-bid="118">Place bid</button>
+            <button class="btn btn--bid" type="button">Place bid</button>
           </div>
         </div>
       </article>
@@ -124,6 +124,7 @@
         <p class="lede">Twelve more pieces off the same two pallets. Each opened at a dollar and closes on its own clock. Bid in the last two minutes and the clock pushes out two more.</p>
       </div>
 
+      <p class="demo-note" id="demoNote" hidden>Demonstration build — there is no auction server behind this page, so bids stay in your browser and nobody else is bidding against you.</p>
       <div class="rail" role="group" aria-label="Filter lots">
         <button class="chip" type="button" data-filter="all" aria-pressed="true">All lots</button>
         <button class="chip" type="button" data-filter="soon" aria-pressed="false">Closing today</button>
@@ -363,6 +364,28 @@
   </div>
 </footer>
 
+<!-- sign in -->
+<dialog class="sheet" id="authSheet" aria-labelledby="authTitle">
+  <form method="dialog" id="authForm" class="sheet__in" novalidate>
+    <div class="sheet__top">
+      <div>
+        <span class="sheet__lot">Paddle</span>
+        <h2 id="authTitle">Sign in to bid</h2>
+      </div>
+      <button class="x" type="button" id="authClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="field">
+      <label for="authEmail">Email</label>
+      <input type="email" id="authEmail" name="email" autocomplete="email"
+             inputmode="email" placeholder="you@example.com" required>
+      <p class="hint" id="authHint">A paddle number is issued the first time you sign in.</p>
+    </div>
+    <p class="sheet__err" id="authErr" role="alert"></p>
+    <button class="btn btn--block" type="submit" id="authSubmit">Continue</button>
+    <p class="sheet__fine" id="authFine"></p>
+  </form>
+</dialog>
+
 <!-- bid sheet -->
 <dialog class="sheet" id="bidSheet" aria-labelledby="sheetTitle">
   <form method="dialog" id="bidForm" class="sheet__in" novalidate>
@@ -401,6 +424,8 @@
   </form>
 </dialog>
 
+<script src="config.js"></script>
+<script src="api.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
