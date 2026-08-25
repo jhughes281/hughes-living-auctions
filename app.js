@@ -370,6 +370,7 @@
   var authTitle  = document.getElementById('authTitle');
   var modeIn     = document.getElementById('modeSignIn');
   var modeReg    = document.getElementById('modeRegister');
+  var authAlt    = document.getElementById('authAlt');
   var authMode   = 'signin';
   var authSubmit = document.getElementById('authSubmit');
   var authFine   = document.getElementById('authFine');
@@ -410,12 +411,28 @@
         ? 'At least six characters. You will use this to bid.'
         : 'Leave this blank and we will email you a sign-in link instead.';
     }
+    if (authAlt) authAlt.hidden = reg || !API.canSignIn || API.name === 'local';
     authFine.textContent = reg
-      ? 'A paddle number is issued the moment the account is made.'
-      : 'Either works. The paddle is issued the first time, whichever you use.';
+      ? 'A paddle number is issued the moment the account is made. No email is sent.'
+      : 'No email is sent when you sign in with a password.';
   }
   if (modeIn)  modeIn.addEventListener('click',  function () { setAuthMode('signin'); });
   if (modeReg) modeReg.addEventListener('click', function () { setAuthMode('register'); });
+
+  var magicBtn = document.getElementById('magicLink');
+  if (magicBtn) magicBtn.addEventListener('click', function () {
+    var email = (authEmail.value || '').trim();
+    if (!email) { authErr.textContent = 'Enter your email first.'; authEmail.focus(); return; }
+    magicBtn.disabled = true;
+    authErr.textContent = '';
+    API.signIn(email, '')          /* blank password => magic link */
+      .then(function (r) {
+        authFine.textContent = 'Sent to ' + r.email +
+          '. Open it soon; the link works once and expires in an hour.';
+      })
+      .catch(function (err) { authErr.textContent = err.message || 'Could not send that.'; })
+      .then(function () { magicBtn.disabled = false; });
+  });
 
   document.getElementById('authClose').addEventListener('click', function () { authSheet.close(); });
   authSheet.addEventListener('click', function (e) { if (e.target === authSheet) authSheet.close(); });
@@ -425,8 +442,10 @@
     var email = (authEmail.value || '').trim();
     if (!email) { authErr.textContent = 'Enter your email address.'; authEmail.focus(); return; }
     var pass = authPass ? authPass.value : '';
-    if (authMode === 'register' && !pass) {
-      authErr.textContent = 'Choose a password to bid with.';
+    if (!pass) {
+      authErr.textContent = authMode === 'register'
+        ? 'Choose a password to bid with.'
+        : 'Enter your password, or use the link below if you have not set one.';
       authPass.focus();
       return;
     }

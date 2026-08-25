@@ -385,13 +385,19 @@
       <p class="hint" id="authHint">A paddle number is issued the first time you sign in.</p>
     </div>
     <div class="field">
-      <label for="authPass">Password <span class="field__opt">optional</span></label>
+      <label for="authPass">Password</label>
       <input type="password" id="authPass" name="password" autocomplete="current-password">
-      <p class="hint">Leave this blank and we will email you a sign-in link instead.</p>
+      <p class="hint" id="passHint">The password you bid with.</p>
     </div>
     <p class="sheet__err" id="authErr" role="alert"></p>
     <button class="btn btn--block" type="submit" id="authSubmit">Continue</button>
     <p class="sheet__fine" id="authFine"></p>
+    <p class="authalt" id="authAlt">
+      Forgotten it, or never set one?
+      <button type="button" class="linkbtn" id="magicLink">Email me a sign-in link</button>
+      <span class="authalt__warn">Some mail providers, Outlook among them, open links to scan
+        them, which uses the link up before you can. If that happens, use a password.</span>
+    </p>
   </form>
 </dialog>
 
