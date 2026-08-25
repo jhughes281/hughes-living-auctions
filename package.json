@@ -7,7 +7,8 @@
     "pg": "node test/boot-pg.mjs",
     "db": "node server/setup-db.mjs",
     "serve": "node server/server.mjs",
-    "test": "node test/run-tests.mjs"
+    "test": "node test/run-tests.mjs",
+    "import": "node tools/import-lots.mjs"
   },
   "devDependencies": {
     "embedded-postgres": "^18.4.0-beta.17",

@@ -60,6 +60,47 @@ of it and must never appear in this repo or anywhere the browser can see.
 See `docs-auction-core.md` for the engine's design and the list of what it deliberately does
 not do yet.
 
+## Listing a pallet
+
+Lots come in from a spreadsheet, not by hand-writing SQL.
+
+```
+node tools/import-lots.mjs pallet-0451.csv --images ./photos/0451      --open "2026-08-28 09:00" --close "2026-08-30 19:00" --stagger 4
+```
+
+That prints what it would do and writes nothing. Add `--commit` to list them.
+
+`tools/lots-template.csv` is the shape. Required per row: `category`, `title`,
+`grade`, `found`, `fixed`, `still`. Optional: `ref`, `pallet`, `retail`,
+`buy_now`, `reserve`, `image`, `alt`, `opening`.
+
+**It validates the whole file before writing any of it**, because a
+half-imported pallet is worse than none. It rejects a bad grade, a missing
+photo, a `buy_now` above retail or below the opening, cents in a `buy_now`
+when the increments are whole dollars, two rows with the same title and no
+`ref` to tell them apart — and an empty `Still` line, which is the one that
+matters. Publishing the remaining flaw is the whole trust mechanism, so a
+blank one is an error, not a warning. Write "Nothing worth printing" when a
+piece genuinely came back clean.
+
+Lot numbers are handed out by the database. Closing times are computed from
+`--close` and `--stagger`, which matches how the sale actually runs: pallets in
+Tuesday, lots open Friday, everything closes Sunday evening a few minutes apart.
+
+Re-running the same file is safe. Rows are matched on `ref` (or pallet + title),
+so a second run corrects the listing rather than duplicating it — and **a lot
+that already has bids on it is skipped entirely.** Nothing about a live lot
+changes under the people bidding on it.
+
+The importer talks to Postgres directly and does not go through the browser
+API, so `lots` stays unwritable by any client, which is doing real security
+work. Credentials come from the environment, never from a file in this repo:
+`DATABASE_URL` for Supabase, or the `PG*` variables locally.
+
+Photos are copied into `img/` and referenced relatively. That is fine for a
+pallet or two and wrong for a year of them — Git is not an image host. Moving
+to Supabase Storage changes `--image-prefix` and the copy step, nothing else.
+
 ## The idea
 
 Every lot is presented as the manila inspection tag the bench tech filled out, and the tag
