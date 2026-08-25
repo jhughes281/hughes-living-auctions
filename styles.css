@@ -422,3 +422,14 @@ button{ font:inherit; color:inherit; }
 }
 .live-note.is-up{ transform:translate(-50%, 0); }
 @media (prefers-reduced-motion: reduce){ .live-note{ transition:none; } }
+
+/* optional-field marker in the sign-in dialog */
+.field__opt{
+  font-family:var(--f-body); font-weight:400; font-size:.62rem;
+  letter-spacing:.02em; text-transform:none; color:var(--ink-3);
+}
+.field input[type=password]{
+  width:100%; font-family:var(--f-body); font-size:1rem; padding:.7rem .8rem;
+  border:1px solid var(--line); background:var(--ground); color:var(--ink);
+  border-radius:var(--r-btn);
+}

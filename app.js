@@ -366,6 +366,7 @@
   var authForm   = document.getElementById('authForm');
   var authEmail  = document.getElementById('authEmail');
   var authErr    = document.getElementById('authErr');
+  var authPass   = document.getElementById('authPass');
   var authSubmit = document.getElementById('authSubmit');
   var authFine   = document.getElementById('authFine');
   var afterAuth  = null;
@@ -373,9 +374,12 @@
   function promptSignIn(then) {
     afterAuth = then || null;
     authErr.textContent = '';
+    if (authPass) authPass.value = '';
+    var passField = authPass && authPass.closest('.field');
+    if (passField) passField.hidden = (API.name === 'local');
     authFine.textContent = API.name === 'local'
       ? 'Local development: no password, and the paddle is issued on first sign-in.'
-      : 'We email you a link. No password to remember.';
+      : 'Either works. The paddle is issued the first time, whichever you use.';
     authSubmit.disabled = false;
     authSubmit.textContent = 'Continue';
     authSheet.showModal();
@@ -391,7 +395,7 @@
     if (!email) { authErr.textContent = 'Enter your email address.'; authEmail.focus(); return; }
     authSubmit.disabled = true;
     authErr.textContent = '';
-    API.signIn(email)
+    API.signIn(email, authPass ? authPass.value : '')
       .then(function (r) {
         if (r && r.magicLink) {
           authErr.textContent = '';
@@ -399,6 +403,7 @@
           authSubmit.textContent = 'Link sent';
           return;
         }
+        if (authPass) authPass.value = '';   /* do not leave it sitting in the DOM */
         return refreshMe().then(function () {
           authSheet.close();
           say('Signed in. You are paddle ' + session.paddle + '.');

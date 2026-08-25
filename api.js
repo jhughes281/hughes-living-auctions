@@ -242,7 +242,7 @@
           return j;
         });
       },
-      signIn: function (email) {
+      signIn: function (email /*, password: dev server is passwordless */) {
         return req('/api/signin', { method: 'POST', body: { email: email } })
           .then(function (j) {
             token = j.token;
@@ -401,13 +401,46 @@
           });
         });
       },
-      signIn: function (email) {
-        return client()
-          .then(function (c) { return c.auth.signInWithOtp({ email: email }); })
-          .then(function (r) {
-            if (r.error) throw AuctionError(r.error.message);
+      /* Two ways in. A password signs you straight in; leaving it blank emails
+         a link instead. Both land on the same account, and the paddle is
+         issued by the signup trigger either way.
+
+         The link route depends on a mail service. Supabase's built-in sender
+         allows two an hour and cannot be raised without your own SMTP, so the
+         password route is the one that works before that is set up. */
+      signIn: function (email, password) {
+        return client().then(function (c) {
+          if (password) {
+            return c.auth.signInWithPassword({ email: email, password: password })
+              .then(function (r) {
+                if (r.error) {
+                  var m = r.error.message || '';
+                  if (/invalid login credentials/i.test(m)) {
+                    throw AuctionError(
+                      'That email and password did not match. If you have never set a ' +
+                      'password, leave it blank and we will email you a link.');
+                  }
+                  if (/email not confirmed/i.test(m)) {
+                    throw AuctionError('That address has not been confirmed yet.');
+                  }
+                  throw AuctionError(m);
+                }
+                return { magicLink: false, email: email };
+              });
+          }
+          return c.auth.signInWithOtp({ email: email }).then(function (r) {
+            if (r.error) {
+              var m = r.error.message || '';
+              if (/rate limit/i.test(m)) {
+                throw AuctionError(
+                  'The sign-in email limit has been reached for this hour. ' +
+                  'Use a password instead, or try again later.');
+              }
+              throw AuctionError(m);
+            }
             return { magicLink: true, email: email };
           });
+        });
       },
       signOut: function () {
         return client().then(function (c) { return c.auth.signOut(); });
