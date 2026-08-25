@@ -293,13 +293,42 @@
   function SupabaseBackend() {
     var sb = null, offset = 0, positions = {}, listeners = [], channel = null;
 
+    /* supabase-js is vendored at vendor/supabase-js-2.112.4.js and loaded from
+       our own origin, not a CDN. This library handles the session token; if it
+       came from a third party, a bad build there would be a bad build here, and
+       ESM imports carry no integrity check. Pinned, hash recorded beside it.
+       To upgrade: npm i @supabase/supabase-js@<version>, copy dist/umd, redo
+       the hash, change the tag in index.html. */
+    var LIB = 'vendor/supabase-js-2.112.4.js';
+    var libLoading = null;
+    function loadLib() {
+      if (global.supabase && global.supabase.createClient) return Promise.resolve();
+      if (libLoading) return libLoading;
+      libLoading = new Promise(function (resolve, reject) {
+        var el = document.createElement('script');
+        el.src = LIB;
+        el.onload = function () {
+          if (global.supabase && global.supabase.createClient) resolve();
+          else reject(AuctionError('The Supabase library loaded but looks wrong.'));
+        };
+        el.onerror = function () { reject(AuctionError('Could not load ' + LIB + '.')); };
+        document.head.appendChild(el);
+      });
+      return libLoading;
+    }
+
     function client() {
       if (sb) return Promise.resolve(sb);
-      return import('https://esm.sh/@supabase/supabase-js@2')
-        .then(function (m) {
-          sb = m.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey);
-          return sb;
+      if (!CFG.supabaseUrl || !CFG.supabaseAnonKey) {
+        return Promise.reject(AuctionError(
+          'No Supabase project configured. Set supabaseUrl and supabaseAnonKey in config.js.'));
+      }
+      return loadLib().then(function () {
+        sb = global.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, {
+          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
         });
+        return sb;
+      });
     }
 
     var PUBLIC_COLS = [
@@ -320,23 +349,40 @@
       });
     }
 
+    /* min_next_cents() takes the internal id, which anon never sees, so the
+       published minimum comes back through min_next_for(lot_no) instead. */
+    function withMinNext(lots) {
+      return client().then(function (c) {
+        return Promise.all(lots.map(function (l) {
+          if (l.status !== 'open') { l.min_next_cents = 0; return l; }
+          return c.rpc('min_next_for', { p_lot_no: l.lot_no }).then(function (r) {
+            l.min_next_cents = (r && typeof r.data === 'number') ? r.data : 0;
+            return l;
+          });
+        }));
+      });
+    }
+
     return {
       name: 'supabase',
       canSignIn: true,
 
       init: function () {
         return client()
-          /* one server round trip whose only job is to date-stamp the clock */
-          .then(function (c) { return c.rpc('now'); })
-          .catch(function () { return { data: null }; })
+          .then(function (c) { return c.rpc('server_now'); })
           .then(function (r) {
-            if (r && r.data) offset = new Date(r.data).getTime() - Date.now();
-            return fetchLots();
+            if (r && r.data) {
+              offset = new Date(r.data).getTime() - Date.now();
+            } else {
+              /* Say so rather than quietly drawing clocks off the browser. */
+              console.warn('server_now() unavailable; clocks are running on browser time');
+            }
+            return fetchLots().then(withMinNext);
           })
           .then(function (lots) { return { lots: lots, now: new Date(Date.now() + offset) }; });
       },
       serverNow: function () { return new Date(Date.now() + offset); },
-      lots: fetchLots,
+      lots: function () { return fetchLots().then(withMinNext); },
 
       me: function () {
         return client().then(function (c) { return c.auth.getUser(); }).then(function (u) {

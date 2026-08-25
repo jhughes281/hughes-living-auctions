@@ -43,6 +43,8 @@ console.log('== applying the auction core ==');
 for (const f of ['./00_auth_shim.sql',
                  '../supabase/migrations/0001_auction_core.sql',
                  '../supabase/migrations/0002_realtime_and_close.sql',
+                 '../supabase/migrations/0003_auth_bridge.sql',
+                 '../supabase/migrations/0004_hardening.sql',
                  '../supabase/seed.sql']) {
   try {
     await db.query(read(f));
@@ -99,7 +101,7 @@ await setup.query(`
          ends_at=now()+interval '1 hour' where lot_no=${LOT};`);
 const uid = i => `${String(i).padStart(8, '0')}-0000-4000-8000-000000000000`;
 for (let i = 1; i <= N; i++) {
-  await setup.query(`insert into auth.users(id) values ($1) on conflict do nothing`, [uid(i)]);
+  await setup.query(`insert into auth.users(id, email) values ($1,$2) on conflict do nothing`, [uid(i), `racer${i}@test.local`]);
   await setup.query(`insert into bidders(id, display_name) values ($1,$2) on conflict do nothing`, [uid(i), `racer${i}`]);
 }
 

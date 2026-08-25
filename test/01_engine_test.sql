@@ -21,11 +21,14 @@ insert into auth.users (id) values
   ('22222222-2222-2222-2222-222222222222'),
   ('33333333-3333-3333-3333-333333333333'),
   ('44444444-4444-4444-4444-444444444444');
+-- 0003 issues a paddle on auth.users insert, so the rows already exist by now.
+-- Name them without fighting the trigger.
 insert into bidders (id, display_name) values
   ('11111111-1111-1111-1111-111111111111', 'Alice'),
   ('22222222-2222-2222-2222-222222222222', 'Bob'),
   ('33333333-3333-3333-3333-333333333333', 'Carol'),
-  ('44444444-4444-4444-4444-444444444444', 'Dave');
+  ('44444444-4444-4444-4444-444444444444', 'Dave')
+on conflict (id) do update set display_name = excluded.display_name;
 
 \echo '== published increments =='
 select assert_eq(bid_increment_cents(   100),  500, '$1 -> $5');

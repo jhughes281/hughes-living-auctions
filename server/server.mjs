@@ -199,7 +199,7 @@ const server = http.createServer(async (req, res) => {
       }
       const uid = uidFor(email);
       const paddle = await asBidder(null, async c => {
-        await c.query('insert into auth.users(id) values ($1) on conflict do nothing', [uid]);
+        await c.query('insert into auth.users(id, email) values ($1,$2) on conflict do nothing', [uid, email]);
         await c.query(
           `insert into bidders (id, email, display_name) values ($1,$2,$3)
              on conflict (id) do nothing`, [uid, email, email.split('@')[0]]);

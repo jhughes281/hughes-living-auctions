@@ -22,13 +22,15 @@ await admin.query(`create database ${DB}`);
 await admin.end();
 
 const db = new pg.Client({ ...base, database: DB });
-db.on('notice', n => { if (/pg_cron/.test(n.message)) console.log(`  note   ${n.message}`); });
+db.on('notice', n => { if (/pg_cron|hardening/.test(n.message)) console.log(`  note   ${n.message}`); });
 await db.connect();
 
 const steps = [
-  ['local_1_auth.sql',                            join(HERE, 'local_1_auth.sql')],
+  ['00_auth_shim.sql',              join(SITE, 'test/00_auth_shim.sql')],
   ['0001_auction_core.sql',   join(SITE, 'supabase/migrations/0001_auction_core.sql')],
   ['0002_realtime_and_close.sql', join(SITE, 'supabase/migrations/0002_realtime_and_close.sql')],
+  ['0003_auth_bridge.sql',    join(SITE, 'supabase/migrations/0003_auth_bridge.sql')],
+  ['0004_hardening.sql',      join(SITE, 'supabase/migrations/0004_hardening.sql')],
   ['local_2_realtime.sql',                    join(HERE, 'local_2_realtime.sql')],
   ['seed.sql',                             join(SITE, 'supabase/seed.sql')],
 ];

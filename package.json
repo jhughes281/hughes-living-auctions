@@ -12,5 +12,8 @@
   "devDependencies": {
     "embedded-postgres": "^18.4.0-beta.17",
     "pg": "^8.13.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.112.4"
   }
 }
