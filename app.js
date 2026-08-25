@@ -534,6 +534,22 @@
     if (row.extension_count > wasExt) flashExtend(lot);
   }
 
+  /* ---------- a failed email link comes back in the hash ----------
+     Supabase puts the reason in the URL fragment rather than showing anything
+     itself, so without this the page just looks blank and fine. */
+  (function readAuthError() {
+    var h = location.hash || '';
+    if (h.indexOf('error') === -1) return;
+    var p = new URLSearchParams(h.replace(/^#/, ''));
+    var code = p.get('error_code') || p.get('error') || '';
+    if (!code) return;
+    var msg = /otp_expired|invalid/i.test(code)
+      ? 'That sign-in link had already been used or had expired. Links last one hour and work once. Use your password instead.'
+      : (p.get('error_description') || 'That sign-in link did not work.').replace(/\+/g, ' ');
+    history.replaceState(null, '', location.pathname + location.search);
+    setTimeout(function () { say(msg); }, 400);
+  })();
+
   /* ---------- boot ---------- */
   API.init()
     .then(function (state) {
