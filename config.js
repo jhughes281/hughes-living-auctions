@@ -11,8 +11,13 @@
              must never appear in this file or anywhere else the browser sees. */
 
 window.HLA_CONFIG = {
-  backend: location.port === '8754' ? 'local' : 'demo',
+  // Port 8754 is the local dev server; everywhere else is the hosted project.
+  backend: location.port === '8754' ? 'local' : 'supabase',
 
-  supabaseUrl: '',
-  supabaseAnonKey: ''
+  supabaseUrl: 'https://otkkmcxgufrspwipdfgk.supabase.co',
+
+  // Publishable key. Public by design — row level security is what restricts
+  // it, and 0004 verified that at migration time. The SECRET key bypasses all
+  // of it and must never appear here.
+  supabaseAnonKey: 'sb_publishable_JhOEnBchDxRL-KgYiEG2fw_Z9bHBiT-'
 };
