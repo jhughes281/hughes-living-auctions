@@ -433,3 +433,14 @@ button{ font:inherit; color:inherit; }
   border:1px solid var(--line); background:var(--ground); color:var(--ink);
   border-radius:var(--r-btn);
 }
+
+/* sign in / register switch */
+.authmode{ display:flex; gap:.4rem; margin-bottom:1.3rem; border-bottom:1px solid var(--line); }
+.authmode__btn{
+  background:none; border:0; cursor:pointer; padding:.55rem .1rem; margin-right:1.3rem;
+  font-family:var(--f-data); font-weight:700; font-size:.68rem; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3); border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+}
+.authmode__btn:hover{ color:var(--ink); }
+.authmode__btn[aria-pressed="true"]{ color:var(--ink); border-bottom-color:var(--accent); }

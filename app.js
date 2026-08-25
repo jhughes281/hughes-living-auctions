@@ -367,6 +367,10 @@
   var authEmail  = document.getElementById('authEmail');
   var authErr    = document.getElementById('authErr');
   var authPass   = document.getElementById('authPass');
+  var authTitle  = document.getElementById('authTitle');
+  var modeIn     = document.getElementById('modeSignIn');
+  var modeReg    = document.getElementById('modeRegister');
+  var authMode   = 'signin';
   var authSubmit = document.getElementById('authSubmit');
   var authFine   = document.getElementById('authFine');
   var afterAuth  = null;
@@ -381,10 +385,37 @@
       ? 'Local development: no password, and the paddle is issued on first sign-in.'
       : 'Either works. The paddle is issued the first time, whichever you use.';
     authSubmit.disabled = false;
-    authSubmit.textContent = 'Continue';
+    var sw = document.querySelector('.authmode');
+    if (sw) sw.hidden = !API.register || API.name === 'local';
+    setAuthMode('signin');
     authSheet.showModal();
     authEmail.focus();
   }
+
+  function setAuthMode(mode) {
+    authMode = mode;
+    var reg = mode === 'register';
+    if (modeIn)  modeIn.setAttribute('aria-pressed', reg ? 'false' : 'true');
+    if (modeReg) modeReg.setAttribute('aria-pressed', reg ? 'true' : 'false');
+    authTitle.textContent = reg ? 'Create a paddle' : 'Sign in to bid';
+    authSubmit.textContent = reg ? 'Create paddle' : 'Continue';
+    authErr.textContent = '';
+    if (authPass) {
+      authPass.setAttribute('autocomplete', reg ? 'new-password' : 'current-password');
+      var lbl = document.querySelector('label[for="authPass"]');
+      var opt = lbl && lbl.querySelector('.field__opt');
+      if (opt) opt.hidden = reg;                 /* required when registering */
+      var hint = authPass.parentElement.querySelector('.hint');
+      if (hint) hint.textContent = reg
+        ? 'At least six characters. You will use this to bid.'
+        : 'Leave this blank and we will email you a sign-in link instead.';
+    }
+    authFine.textContent = reg
+      ? 'A paddle number is issued the moment the account is made.'
+      : 'Either works. The paddle is issued the first time, whichever you use.';
+  }
+  if (modeIn)  modeIn.addEventListener('click',  function () { setAuthMode('signin'); });
+  if (modeReg) modeReg.addEventListener('click', function () { setAuthMode('register'); });
 
   document.getElementById('authClose').addEventListener('click', function () { authSheet.close(); });
   authSheet.addEventListener('click', function (e) { if (e.target === authSheet) authSheet.close(); });
@@ -393,10 +424,32 @@
     e.preventDefault();
     var email = (authEmail.value || '').trim();
     if (!email) { authErr.textContent = 'Enter your email address.'; authEmail.focus(); return; }
+    var pass = authPass ? authPass.value : '';
+    if (authMode === 'register' && !pass) {
+      authErr.textContent = 'Choose a password to bid with.';
+      authPass.focus();
+      return;
+    }
     authSubmit.disabled = true;
     authErr.textContent = '';
-    API.signIn(email, authPass ? authPass.value : '')
+
+    var attempt = authMode === 'register'
+      ? API.register(email, pass).then(function (r) {
+          if (r && r.needsConfirmation) {
+            /* Account exists but cannot bid yet. Say exactly that. */
+            authErr.textContent = '';
+            authFine.textContent = 'Paddle created. Confirm ' + r.email +
+              ' from the email we just sent, then sign in.';
+            authSubmit.textContent = 'Check your email';
+            return { pending: true };
+          }
+          return r;
+        })
+      : API.signIn(email, pass);
+
+    attempt
       .then(function (r) {
+        if (r && r.pending) return;
         if (r && r.magicLink) {
           authErr.textContent = '';
           authFine.textContent = 'Check ' + r.email + ' for the sign-in link, then come back.';

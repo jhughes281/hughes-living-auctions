@@ -120,6 +120,10 @@
           'Bids here stay in your browser.'));
       },
       signOut: function () { return Promise.resolve(); },
+      register: function () {
+        return Promise.reject(AuctionError(
+          'This is the demonstration build, so there is no paddle to issue.'));
+      },
 
       placeBid: function (lotNo, maxCents, protection) {
         var lot = lots.filter(function (l) { return l.lot_no === lotNo; })[0];
@@ -242,6 +246,10 @@
           return j;
         });
       },
+      /* The dev server issues a paddle on first sign-in, so registering and
+         signing in are the same call here. */
+      register: function (email) { return this.signIn(email); },
+
       signIn: function (email /*, password: dev server is passwordless */) {
         return req('/api/signin', { method: 'POST', body: { email: email } })
           .then(function (j) {
@@ -408,6 +416,36 @@
          The link route depends on a mail service. Supabase's built-in sender
          allows two an hour and cannot be raised without your own SMTP, so the
          password route is the one that works before that is set up. */
+      /* Registration. Supabase returns a session immediately when email
+         confirmation is off, and no session when it is on — in which case the
+         account exists but cannot bid until the address is confirmed. Report
+         which happened rather than pretending both are success. */
+      register: function (email, password) {
+        return client().then(function (c) {
+          return c.auth.signUp({ email: email, password: password });
+        }).then(function (r) {
+          if (r.error) {
+            var m = r.error.message || '';
+            if (/already registered|already been registered/i.test(m)) {
+              throw AuctionError('That email already has a paddle. Sign in instead.');
+            }
+            if (/password/i.test(m) && /(6|8|characters|short|weak)/i.test(m)) {
+              throw AuctionError('Choose a longer password — at least six characters.');
+            }
+            if (/rate limit/i.test(m)) {
+              throw AuctionError(
+                'The sign-up email limit has been reached for this hour. Try again later.');
+            }
+            if (/signups not allowed|disabled/i.test(m)) {
+              throw AuctionError('New paddles are closed at the moment.');
+            }
+            throw AuctionError(m);
+          }
+          /* session present => straight in. absent => confirmation required. */
+          return { needsConfirmation: !(r.data && r.data.session), email: email };
+        });
+      },
+
       signIn: function (email, password) {
         return client().then(function (c) {
           if (password) {
