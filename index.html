@@ -30,8 +30,9 @@
       <a href="#protection">Protection</a>
       <a href="#bidding">Bidding &amp; pickup</a>
       <a href="#closed">Closed</a>
+      <a href="paddle.html">Your paddle</a>
     </nav>
-    <button class="paddle" type="button" id="paddleBtn"><span id="paddleLabel">Sign in</span> <b id="paddleNo"></b></button>
+    <button class="paddle" type="button" data-paddle><span data-paddle-label>Sign in</span> <b data-paddle-no></b></button>
     <button class="burger" id="burger" aria-expanded="false" aria-controls="mobnav" aria-label="Open menu">
       <span></span><span></span><span></span>
     </button>
@@ -42,7 +43,7 @@
     <a href="#protection">Protection</a>
     <a href="#bidding">Bidding &amp; pickup</a>
     <a href="#closed">Closed</a>
-    <button class="paddle" type="button" id="paddleBtn2"><span id="paddleLabel2">Sign in</span> <b id="paddleNo2"></b></button>
+    <button class="paddle" type="button" data-paddle><span data-paddle-label>Sign in</span> <b data-paddle-no></b></button>
   </div></div>
 </header>
 
@@ -364,43 +365,6 @@
   </div>
 </footer>
 
-<!-- sign in -->
-<dialog class="sheet" id="authSheet" aria-labelledby="authTitle">
-  <form method="dialog" id="authForm" class="sheet__in" novalidate>
-    <div class="sheet__top">
-      <div>
-        <span class="sheet__lot">Paddle</span>
-        <h2 id="authTitle">Sign in to bid</h2>
-      </div>
-      <button class="x" type="button" id="authClose" aria-label="Close">&times;</button>
-    </div>
-    <div class="authmode" role="group" aria-label="Sign in or create a paddle">
-      <button type="button" class="authmode__btn" id="modeSignIn"   aria-pressed="true">Sign in</button>
-      <button type="button" class="authmode__btn" id="modeRegister" aria-pressed="false">Create a paddle</button>
-    </div>
-    <div class="field">
-      <label for="authEmail">Email</label>
-      <input type="email" id="authEmail" name="email" autocomplete="email"
-             inputmode="email" placeholder="you@example.com" required>
-      <p class="hint" id="authHint">A paddle number is issued the first time you sign in.</p>
-    </div>
-    <div class="field">
-      <label for="authPass">Password</label>
-      <input type="password" id="authPass" name="password" autocomplete="current-password">
-      <p class="hint" id="passHint">The password you bid with.</p>
-    </div>
-    <p class="sheet__err" id="authErr" role="alert"></p>
-    <button class="btn btn--block" type="submit" id="authSubmit">Continue</button>
-    <p class="sheet__fine" id="authFine"></p>
-    <p class="authalt" id="authAlt">
-      Forgotten it, or never set one?
-      <button type="button" class="linkbtn" id="magicLink">Email me a sign-in link</button>
-      <span class="authalt__warn">Some mail providers, Outlook among them, open links to scan
-        them, which uses the link up before you can. If that happens, use a password.</span>
-    </p>
-  </form>
-</dialog>
-
 <!-- bid sheet -->
 <dialog class="sheet" id="bidSheet" aria-labelledby="sheetTitle">
   <form method="dialog" id="bidForm" class="sheet__in" novalidate>
@@ -441,6 +405,7 @@
 
 <script src="config.js"></script>
 <script src="api.js"></script>
+<script src="auth.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

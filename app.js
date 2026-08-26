@@ -59,7 +59,7 @@
     var on = watching.indexOf(lot.lot_no) !== -1;
     var closed = lot.status !== 'open';
     return '' +
-    '<article class="tag' + (API.isMine && API.isMine(lot) ? ' is-mine' : '') + '" data-lot="' + lot.lot_no + '">' +
+    '<article class="tag' + (window.HLA_AUTH && window.HLA_AUTH.isLeading(lot.lot_no) ? ' is-mine' : '') + '" data-lot="' + lot.lot_no + '">' +
       '<span class="tag__punch" aria-hidden="true"></span>' +
       '<div class="tag__head">' +
         '<span class="tag__id">LOT ' + lot.lot_no + '</span>' +
@@ -68,12 +68,14 @@
                 '" aria-label="Watch lot ' + lot.lot_no + '">' + starSVG(on) + '</button>' +
       '</div>' +
       '<div class="tag__photo">' +
+        '<a href="lot.html?lot=' + lot.lot_no + '" aria-label="Open lot ' + lot.lot_no + '">' +
         '<img src="' + esc(lot.image_path) + '" alt="' + esc(lot.alt_text) + '" loading="lazy" width="800" height="600">' +
+        '</a>' +
         '<span class="grade grade--' + esc(lot.grade) + '">Grade ' + esc(lot.grade).toUpperCase() + '</span>' +
       '</div>' +
       '<div class="tag__body">' +
         '<p class="tag__cat">' + esc(lot.category) + '</p>' +
-        '<h3 class="tag__title">' + esc(lot.title) + '</h3>' +
+        '<h3 class="tag__title"><a href="lot.html?lot=' + lot.lot_no + '">' + esc(lot.title) + '</a></h3>' +
         (lot.retail_cents ? '<p class="tag__retail">Retail <s>' + money(lot.retail_cents) + '</s></p>' : '') +
         '<dl class="ledger">' +
           '<div class="ledger__row"><dt>Found</dt><dd>' + esc(lot.found) + '</dd></div>' +
@@ -144,7 +146,7 @@
       if (amt) amt.textContent = money(priceOf(lot));
       var meta = card.querySelector('.stub__bid .meta');
       if (meta) meta.textContent = lot.bid_count + (lot.bid_count === 1 ? ' bid' : ' bids');
-      card.classList.toggle('is-mine', !!(API.isMine && API.isMine(lot)));
+      card.classList.toggle('is-mine', !!(window.HLA_AUTH && window.HLA_AUTH.isLeading(lot.lot_no)));
 
       var closed = lot.status !== 'open';
       var bidBtn = card.querySelector('.btn--bid');
@@ -362,165 +364,16 @@
   }
 
   /* ---------- sign in ---------- */
-  var authSheet  = document.getElementById('authSheet');
-  var authForm   = document.getElementById('authForm');
-  var authEmail  = document.getElementById('authEmail');
-  var authErr    = document.getElementById('authErr');
-  var authPass   = document.getElementById('authPass');
-  var authTitle  = document.getElementById('authTitle');
-  var modeIn     = document.getElementById('modeSignIn');
-  var modeReg    = document.getElementById('modeRegister');
-  var authAlt    = document.getElementById('authAlt');
-  var authMode   = 'signin';
-  var authSubmit = document.getElementById('authSubmit');
-  var authFine   = document.getElementById('authFine');
-  var afterAuth  = null;
-
-  function promptSignIn(then) {
-    afterAuth = then || null;
-    authErr.textContent = '';
-    if (authPass) authPass.value = '';
-    var passField = authPass && authPass.closest('.field');
-    if (passField) passField.hidden = (API.name === 'local');
-    authFine.textContent = API.name === 'local'
-      ? 'Local development: no password, and the paddle is issued on first sign-in.'
-      : 'Either works. The paddle is issued the first time, whichever you use.';
-    authSubmit.disabled = false;
-    var sw = document.querySelector('.authmode');
-    if (sw) sw.hidden = !API.register || API.name === 'local';
-    setAuthMode('signin');
-    authSheet.showModal();
-    authEmail.focus();
-  }
-
-  function setAuthMode(mode) {
-    authMode = mode;
-    var reg = mode === 'register';
-    if (modeIn)  modeIn.setAttribute('aria-pressed', reg ? 'false' : 'true');
-    if (modeReg) modeReg.setAttribute('aria-pressed', reg ? 'true' : 'false');
-    authTitle.textContent = reg ? 'Create a paddle' : 'Sign in to bid';
-    authSubmit.textContent = reg ? 'Create paddle' : 'Continue';
-    authErr.textContent = '';
-    if (authPass) {
-      authPass.setAttribute('autocomplete', reg ? 'new-password' : 'current-password');
-      var lbl = document.querySelector('label[for="authPass"]');
-      var opt = lbl && lbl.querySelector('.field__opt');
-      if (opt) opt.hidden = reg;                 /* required when registering */
-      var hint = authPass.parentElement.querySelector('.hint');
-      if (hint) hint.textContent = reg
-        ? 'At least six characters. You will use this to bid.'
-        : 'Leave this blank and we will email you a sign-in link instead.';
-    }
-    if (authAlt) authAlt.hidden = reg || !API.canSignIn || API.name === 'local';
-    authFine.textContent = reg
-      ? 'A paddle number is issued the moment the account is made. No email is sent.'
-      : 'No email is sent when you sign in with a password.';
-  }
-  if (modeIn)  modeIn.addEventListener('click',  function () { setAuthMode('signin'); });
-  if (modeReg) modeReg.addEventListener('click', function () { setAuthMode('register'); });
-
-  var magicBtn = document.getElementById('magicLink');
-  if (magicBtn) magicBtn.addEventListener('click', function () {
-    var email = (authEmail.value || '').trim();
-    if (!email) { authErr.textContent = 'Enter your email first.'; authEmail.focus(); return; }
-    magicBtn.disabled = true;
-    authErr.textContent = '';
-    API.signIn(email, '')          /* blank password => magic link */
-      .then(function (r) {
-        authFine.textContent = 'Sent to ' + r.email +
-          '. Open it soon; the link works once and expires in an hour.';
-      })
-      .catch(function (err) { authErr.textContent = err.message || 'Could not send that.'; })
-      .then(function () { magicBtn.disabled = false; });
-  });
-
-  document.getElementById('authClose').addEventListener('click', function () { authSheet.close(); });
-  authSheet.addEventListener('click', function (e) { if (e.target === authSheet) authSheet.close(); });
-
-  authForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var email = (authEmail.value || '').trim();
-    if (!email) { authErr.textContent = 'Enter your email address.'; authEmail.focus(); return; }
-    var pass = authPass ? authPass.value : '';
-    if (!pass) {
-      authErr.textContent = authMode === 'register'
-        ? 'Choose a password to bid with.'
-        : 'Enter your password, or use the link below if you have not set one.';
-      authPass.focus();
-      return;
-    }
-    authSubmit.disabled = true;
-    authErr.textContent = '';
-
-    var attempt = authMode === 'register'
-      ? API.register(email, pass).then(function (r) {
-          if (r && r.needsConfirmation) {
-            /* Account exists but cannot bid yet. Say exactly that. */
-            authErr.textContent = '';
-            authFine.textContent = 'Paddle created. Confirm ' + r.email +
-              ' from the email we just sent, then sign in.';
-            authSubmit.textContent = 'Check your email';
-            return { pending: true };
-          }
-          return r;
-        })
-      : API.signIn(email, pass);
-
-    attempt
-      .then(function (r) {
-        if (r && r.pending) return;
-        if (r && r.magicLink) {
-          authErr.textContent = '';
-          authFine.textContent = 'Check ' + r.email + ' for the sign-in link, then come back.';
-          authSubmit.textContent = 'Link sent';
-          return;
-        }
-        if (authPass) authPass.value = '';   /* do not leave it sitting in the DOM */
-        return refreshMe().then(function () {
-          authSheet.close();
-          say('Signed in. You are paddle ' + session.paddle + '.');
-          var next = afterAuth; afterAuth = null;
-          if (next) next();
-        });
-      })
-      .catch(function (err) {
-        authErr.textContent = err.message || 'Could not sign in.';
-      })
-      .then(function () { authSubmit.disabled = false; });
-  });
-
-  function onPaddleClick() {
-    if (!API.canSignIn) {
-      say('This is the demonstration build. There is no paddle to issue.');
-      return;
-    }
-    if (!session.signedIn) { promptSignIn(); return; }
-    if (confirm('Sign out of paddle ' + session.paddle + '?')) {
-      API.signOut().then(refreshMe).then(function () { say('Signed out.'); });
-    }
-  }
-  ['paddleBtn', 'paddleBtn2'].forEach(function (id) {
-    var el = document.getElementById(id);
-    if (el) el.addEventListener('click', onPaddleClick);
-  });
-
-  function paintPaddle() {
-    [['paddleLabel', 'paddleNo'], ['paddleLabel2', 'paddleNo2']].forEach(function (pair) {
-      var label = document.getElementById(pair[0]);
-      var num   = document.getElementById(pair[1]);
-      if (!label || !num) return;
-      if (session.signedIn) { label.textContent = 'PADDLE'; num.textContent = session.paddle; }
-      else                  { label.textContent = API.canSignIn ? 'Sign in' : 'Demo'; num.textContent = ''; }
-    });
-  }
-
+  /* Lives in auth.js now, shared with lot.html and paddle.html so the three
+     pages cannot drift apart. */
+  var AUTH = window.HLA_AUTH;
+  function promptSignIn(then) { AUTH.open(then); }
   function refreshMe() {
-    return API.me().then(function (m) {
-      session = { signedIn: !!m.signedIn, paddle: m.paddle, email: m.email };
-      paintPaddle();
+    return AUTH.refresh().then(function (s) {
+      session = { signedIn: s.signedIn, paddle: s.paddle, email: s.email };
       LOTS.forEach(paintLot);
-      return m;
-    }).catch(function () {});
+      return s;
+    });
   }
 
   /* ---------- data ---------- */
@@ -553,30 +406,16 @@
     if (row.extension_count > wasExt) flashExtend(lot);
   }
 
-  /* ---------- a failed email link comes back in the hash ----------
-     Supabase puts the reason in the URL fragment rather than showing anything
-     itself, so without this the page just looks blank and fine. */
-  (function readAuthError() {
-    var h = location.hash || '';
-    if (h.indexOf('error') === -1) return;
-    var p = new URLSearchParams(h.replace(/^#/, ''));
-    var code = p.get('error_code') || p.get('error') || '';
-    if (!code) return;
-    var msg = /otp_expired|invalid/i.test(code)
-      ? 'That sign-in link had already been used or had expired. Links last one hour and work once. Use your password instead.'
-      : (p.get('error_description') || 'That sign-in link did not work.').replace(/\+/g, ' ');
-    history.replaceState(null, '', location.pathname + location.search);
-    setTimeout(function () { say(msg); }, 400);
-  })();
-
   /* ---------- boot ---------- */
+  AUTH.bindPaddle();
+  var hashErr = AUTH.readHashError();
+
   API.init()
     .then(function (state) {
       absorb(state.lots);
       if (API.canSignIn) return refreshMe();
     })
     .then(function () {
-      paintPaddle();          /* demo never calls refreshMe, so label it here */
       render();
       LOTS.forEach(paintLot);
       setInterval(tick, 1000);
@@ -587,6 +426,7 @@
       }
       /* positions can change because someone else bid, so re-check periodically */
       if (API.canSignIn) setInterval(function () { if (session.signedIn) refreshMe(); }, 15000);
+      if (hashErr) setTimeout(function () { say(hashErr); }, 400);
     })
     .catch(function (err) {
       grid.innerHTML = '';

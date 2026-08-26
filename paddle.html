@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your paddle — Hughes Living Auctions</title>
+<meta name="description" content="The lots you are bidding on and whether you are still holding them.">
+<link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="Your paddle — Hughes Living Auctions">
+<meta property="og:description" content="Furniture bought by the pallet, repaired on the bench, and auctioned with the damage printed on the tag.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="brand/og-logo.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600&family=Courier+Prime:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+
+<header class="masthead">
+  <div class="wrap masthead__in">
+    <a class="mark" href="#top">
+      <img class="mark__logo" src="brand/logo-twoline.svg" width="3250" height="1765" alt="Hughes Living Auctions">
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="#lots">Live lots</a>
+      <a href="#tag">The tag</a>
+      <a href="#protection">Protection</a>
+      <a href="#bidding">Bidding &amp; pickup</a>
+      <a href="#closed">Closed</a>
+    </nav>
+    <button class="paddle" type="button" data-paddle><span data-paddle-label>Sign in</span> <b data-paddle-no></b></button>
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="mobnav" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="wrap"><div class="mobnav" id="mobnav">
+    <a href="#lots">Live lots</a>
+    <a href="#tag">The tag</a>
+    <a href="#protection">Protection</a>
+    <a href="#bidding">Bidding &amp; pickup</a>
+    <a href="#closed">Closed</a>
+    <button class="paddle" type="button" data-paddle><span data-paddle-label>Sign in</span> <b data-paddle-no></b></button>
+  </div></div>
+</header>
+
+<main id="main">
+<section class="band">
+  <div class="wrap">
+    <div class="band__head">
+      <div>
+        <p class="eyebrow" id="paddleEyebrow">Your paddle</p>
+        <h1 class="sect-title">Where you stand</h1>
+      </div>
+      <p class="lede">Every lot you have bid on, and whether your maximum is still
+        holding it. Your maximum is never shown to anyone else.</p>
+    </div>
+    <div id="posHost"><p class="lots__empty">Loading&hellip;</p></div>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__grid">
+      <div>
+        <a class="mark mark--foot" href="#top">
+          <img class="mark__logo" src="brand/logo-stacked.svg" width="3250" height="2075" alt="Hughes Living Co. Auctions">
+        </a>
+        <p class="foot__note">The repair bench behind Hughes Living Co. Pallets come in Tuesday, lots open Friday, everything closes Sunday night.</p>
+      </div>
+      <div>
+        <h4>Auction</h4>
+        <ul>
+          <li><a href="#lots">Open lots</a></li>
+          <li><a href="#closed">Closed results</a></li>
+          <li><a href="#tag">Grade rubric</a></li>
+          <li><a href="#bidding">Increments and rules</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>The shop</h4>
+        <ul>
+          <li><a href="#bidding">Pickup and delivery</a></li>
+          <li><a href="#protection">Bench protection</a></li>
+          <li><a href="https://hugheslivingco.com">Hughes Living Co. store</a></li>
+          <li><a href="mailto:auctions@hugheslivingco.com">auctions@hugheslivingco.com</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot__base">
+      <span>&copy; 2026 Hughes Living Co.</span>
+      <span>Lots sold as described on the tag</span>
+    </div>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script src="auth.js"></script>
+<script src="paddle.js"></script>
+</body>
+</html>

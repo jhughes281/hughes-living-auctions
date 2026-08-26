@@ -454,3 +454,73 @@ button{ font:inherit; color:inherit; }
 }
 .linkbtn:hover{ color:var(--ink); }
 .authalt__warn{ display:block; margin-top:.5rem; font-size:.76rem; color:var(--ink-3); }
+
+/* ---------- a lot on its own page ---------- */
+.crumb{ font-family:var(--f-data); font-size:.72rem; letter-spacing:.06em; margin:0 0 1.6rem; }
+.crumb a{ text-decoration:none; color:var(--ink-3); }
+.crumb a:hover{ color:var(--accent); }
+
+.lot{ display:grid; gap:clamp(1.8rem,4vw,3.2rem); align-items:start; }
+@media (min-width:900px){ .lot{ grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); } }
+
+.lot__media{ position:relative; background:var(--card); border:1px solid var(--line); }
+.lot__media img{ width:100%; height:auto; background:var(--ground); mix-blend-mode:multiply; }
+.lot__media .grade{ right:1rem; bottom:3.4rem; }
+.lot__shotnote{
+  margin:0; padding:.7rem .9rem; border-top:1px solid var(--line);
+  font-family:var(--f-data); font-size:.68rem; line-height:1.5; color:var(--ink-3);
+}
+
+.lot__title{
+  font-family:var(--f-disp); font-weight:600; color:var(--ink);
+  font-size:clamp(1.7rem,3.2vw,2.5rem); line-height:1.14; letter-spacing:0; margin:.2rem 0 0;
+}
+.lot__grade{ font-size:.92rem; color:var(--ink-2); margin:1.2rem 0 0; }
+.lot__grade b{ color:var(--ink); }
+.lot__grade a{ color:var(--accent); }
+
+.lot__stub{
+  margin-top:1.8rem; padding-top:1.4rem; border-top:1px dashed var(--line);
+  display:grid; grid-template-columns:1fr auto; gap:.6rem 1rem; align-items:end;
+}
+.lot__stub .stub__acts{ grid-column:1 / -1; display:flex; gap:.6rem; margin-top:.4rem; }
+.lot__stub .stub__acts .btn{ flex:1; }
+.lot__stub .stub__bid .amt{ font-size:2.2rem; }
+.lot__min, .lot__mymax{
+  grid-column:1 / -1; margin:.2rem 0 0; font-size:.85rem; color:var(--ink-3);
+}
+.lot__mymax{ font-family:var(--f-data); font-size:.76rem; color:var(--accent); }
+.lot .mine-flag{ grid-column:1 / -1; }
+
+/* ---------- where you stand ---------- */
+.pos__summary{ font-size:1.02rem; margin:0 0 1.6rem; }
+.pos__losing{ color:var(--flag-txt); font-weight:600; }
+
+.pos{ width:100%; border-collapse:collapse; }
+.pos caption{
+  text-align:left; font-family:var(--f-data); font-size:.66rem; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3); padding-bottom:.9rem;
+}
+.pos th, .pos td{ text-align:left; padding:1rem .9rem 1rem 0; border-bottom:1px solid var(--line); vertical-align:top; }
+.pos thead th{
+  font-family:var(--f-data); font-weight:700; font-size:.64rem; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+.pos td a{ color:var(--ink); text-decoration:none; font-weight:600; }
+.pos td a:hover{ color:var(--accent); }
+.pos__no{ display:block; font-family:var(--f-data); font-size:.66rem; color:var(--ink-3); margin-top:.2rem; }
+.pos__num{ font-family:var(--f-data); font-size:.9rem; }
+.pos__flag{
+  font-family:var(--f-data); font-weight:700; font-size:.64rem; letter-spacing:.1em;
+  text-transform:uppercase; border:1px solid currentColor; padding:.2rem .45rem;
+}
+.pos tr.is-leading .pos__flag{ color:var(--verdict); }
+.pos tr.is-outbid  .pos__flag{ color:var(--flag-txt); }
+
+@media (max-width:760px){
+  .pos thead{ position:absolute; left:-9999px; }
+  .pos tr{ display:grid; grid-template-columns:1fr auto; gap:.3rem .8rem; padding:1.1rem 0; border-bottom:1px solid var(--line); }
+  .pos td{ border:0; padding:0; }
+  .pos td:nth-child(2){ grid-row:1; grid-column:2; text-align:right; }
+  .pos__num{ font-size:.82rem; color:var(--ink-3); }
+}
