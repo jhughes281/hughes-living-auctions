@@ -174,7 +174,8 @@ button{ font:inherit; color:inherit; }
 .tag__body{ padding:1rem .95rem .9rem; flex:1; }
 .tag__cat{ font-family:var(--f-data); font-weight:700; font-size:.63rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin:0 0 .4rem; }
 .tag__title{ font-family:var(--f-disp); font-weight:600; font-size:1.24rem; line-height:1.2; letter-spacing:0; margin:0; }
-.tag__retail{ font-family:var(--f-data); font-size:.72rem; color:var(--ink-3); margin:.45rem 0 0; }
+.tag__retail{ font-family:var(--f-body); font-variant-numeric:tabular-nums;
+  font-size:.8rem; color:var(--ink-3); margin:.45rem 0 0; }
 .tag__retail s{ text-decoration-thickness:1px; }
 
 /* condition ledger — the reason anyone trusts a damaged-goods auction */
@@ -202,10 +203,15 @@ button{ font:inherit; color:inherit; }
 .stub__bid .lbl,.stub__clock .lbl{
   display:block; font-family:var(--f-data); font-weight:700; font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3);
 }
-.stub__bid .amt{ font-family:var(--f-data); font-size:1.5rem; letter-spacing:-.02em; display:block; line-height:1.15; color:var(--ink); }
-.stub__bid .meta{ font-family:var(--f-data); font-size:.68rem; color:var(--ink-3); }
+/* Money is set in the display face. Courier is for what the bench typed on
+   the tag — labels, lot numbers, the ticking clock — not for the price. */
+.stub__bid .amt{ font-family:var(--f-disp); font-weight:600; font-size:1.85rem;
+  letter-spacing:0; display:block; line-height:1.1; color:var(--ink); }
+.stub__bid .meta{ font-family:var(--f-body); font-variant-numeric:tabular-nums;
+  font-size:.74rem; color:var(--ink-3); }
 .stub__clock{ text-align:right; }
-.stub__clock time{ font-family:var(--f-data); font-size:1.05rem; letter-spacing:.02em; color:var(--ink); }
+/* Stays monospace on purpose: tabular digits, so the clock does not jitter. */
+.stub__clock time{ font-family:var(--f-data); font-size:1.02rem; letter-spacing:.02em; color:var(--ink); }
 .stub__clock.is-final time{ color:var(--flag-txt); }
 .stub__clock.is-done time{ color:var(--ink-3); }
 .stub__acts{ grid-column:1 / -1; display:flex; gap:.55rem; }
@@ -226,7 +232,7 @@ button{ font:inherit; color:inherit; }
 /* featured lot: the hero thesis is a live auction, not a slogan */
 .tag--feature .tag__photo{ aspect-ratio:16/10; }
 .tag--feature .tag__title{ font-size:clamp(1.25rem,2.2vw,1.6rem); line-height:1.18; }
-.tag--feature .stub__bid .amt{ font-size:2.1rem; }
+.tag--feature .stub__bid .amt{ font-size:2.6rem; }
 .live{
   display:inline-flex; align-items:center; gap:.42rem;
   font-family:var(--f-data); font-size:.63rem; letter-spacing:.11em; text-transform:uppercase; color:var(--flag-txt);
@@ -316,7 +322,8 @@ button{ font:inherit; color:inherit; }
 .rule--flag{ border-left:3px solid var(--flag); padding-left:1.1rem; }
 .incr{ width:100%; border-collapse:collapse; }
 .incr caption{ text-align:left; font-family:var(--f-data); font-weight:700; font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); padding-bottom:.9rem; }
-.incr th,.incr td{ text-align:left; font-family:var(--f-data); font-size:.88rem; padding:.85rem 0; border-bottom:1px solid var(--line); color:var(--ink-2); }
+.incr th,.incr td{ text-align:left; font-family:var(--f-body); font-variant-numeric:tabular-nums;
+  font-size:.92rem; padding:.85rem 0; border-bottom:1px solid var(--line); color:var(--ink-2); }
 .incr td:last-child{ text-align:right; color:var(--ink); }
 .incr thead th{ font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); font-weight:400; }
 .incr thead th:last-child{ text-align:right; }
@@ -326,7 +333,8 @@ button{ font:inherit; color:inherit; }
 .results th,.results td{ text-align:left; padding:1rem .9rem 1rem 0; border-bottom:1px solid var(--line); font-size:.92rem; vertical-align:top; }
 .results thead th{ font-family:var(--f-data); font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); font-weight:400; }
 .results td:first-child{ color:var(--ink); }
-.results td:nth-child(2),.results td:nth-child(3){ font-family:var(--f-data); }
+.results td:nth-child(2){ font-family:var(--f-body); font-variant-numeric:tabular-nums; }
+.results td:nth-child(3){ font-family:var(--f-disp); font-weight:600; font-size:1.05rem; }
 .results td:nth-child(2){ color:var(--ink-3); text-decoration:line-through; }
 .results td:nth-child(3){ color:var(--accent); }
 .results td:last-child{ padding-right:0; color:var(--ink-2); }
@@ -351,11 +359,12 @@ button{ font:inherit; color:inherit; }
 .sheet__lot{ font-family:var(--f-data); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
 .x{ background:none; border:1px solid var(--line); border-radius:var(--r-btn); width:32px; height:32px; cursor:pointer; font-size:1rem; line-height:1; flex:none; }
 .x:hover{ background:var(--ink); color:var(--card); border-color:var(--ink); }
-.sheet__now{ display:flex; justify-content:space-between; padding:.85rem 0; border-block:1px solid var(--line); font-family:var(--f-data); font-size:.85rem; color:var(--ink-2); }
+.sheet__now{ display:flex; justify-content:space-between; padding:.85rem 0; border-block:1px solid var(--line);
+  font-family:var(--f-body); font-variant-numeric:tabular-nums; font-size:.9rem; color:var(--ink-2); }
 .field{ margin-top:1.2rem; }
 .field label{ display:block; font-family:var(--f-data); font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-bottom:.45rem; }
 .field input[type=number]{
-  width:100%; font-family:var(--f-data); font-size:1.25rem; padding:.7rem .8rem;
+  width:100%; font-family:var(--f-disp); font-weight:600; font-size:1.4rem; padding:.7rem .8rem;
   border:1px solid var(--line); background:var(--ground); color:var(--ink); border-radius:var(--r-btn);
 }
 .field .hint{ font-size:.8rem; color:var(--ink-3); margin:.45rem 0 0; }
@@ -363,7 +372,8 @@ button{ font:inherit; color:inherit; }
 .opt input{ margin-top:.3rem; width:16px; height:16px; accent-color:var(--accent); }
 .opt span{ font-size:.88rem; color:var(--ink-2); }
 .opt b{ font-family:var(--f-data); font-weight:400; color:var(--ink); }
-.sheet__total{ display:flex; justify-content:space-between; margin-top:1.2rem; font-family:var(--f-data); font-size:.95rem; }
+.sheet__total{ display:flex; justify-content:space-between; margin-top:1.2rem;
+  font-family:var(--f-disp); font-weight:600; font-size:1.2rem; color:var(--ink); }
 .sheet__err{ color:var(--flag-txt); font-size:.85rem; margin:.9rem 0 0; min-height:1.2em; }
 .sheet .btn{ margin-top:1.1rem; }
 .sheet__fine{ font-size:.78rem; color:var(--ink-3); margin:1rem 0 0; line-height:1.5; }
@@ -485,7 +495,7 @@ button{ font:inherit; color:inherit; }
 }
 .lot__stub .stub__acts{ grid-column:1 / -1; display:flex; gap:.6rem; margin-top:.4rem; }
 .lot__stub .stub__acts .btn{ flex:1; }
-.lot__stub .stub__bid .amt{ font-size:2.2rem; }
+.lot__stub .stub__bid .amt{ font-size:2.7rem; }
 .lot__min, .lot__mymax{
   grid-column:1 / -1; margin:.2rem 0 0; font-size:.85rem; color:var(--ink-3);
 }
@@ -509,7 +519,7 @@ button{ font:inherit; color:inherit; }
 .pos td a{ color:var(--ink); text-decoration:none; font-weight:600; }
 .pos td a:hover{ color:var(--accent); }
 .pos__no{ display:block; font-family:var(--f-data); font-size:.66rem; color:var(--ink-3); margin-top:.2rem; }
-.pos__num{ font-family:var(--f-data); font-size:.9rem; }
+.pos__num{ font-family:var(--f-body); font-variant-numeric:tabular-nums; font-size:.94rem; }
 .pos__flag{
   font-family:var(--f-data); font-weight:700; font-size:.64rem; letter-spacing:.1em;
   text-transform:uppercase; border:1px solid currentColor; padding:.2rem .45rem;
