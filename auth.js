@@ -51,12 +51,86 @@
     '    <p class="authalt" id="hlaAuthAlt">',
     '      Forgotten it, or never set one?',
     '      <button type="button" class="linkbtn" id="hlaMagic">Email me a sign-in link</button>',
+    '      <span class="authalt__or">or</span>',
+    '      <button type="button" class="linkbtn" id="hlaForgot">Email a password reset</button>',
     '      <span class="authalt__warn">Some mail providers, Outlook among them, open links to',
     '        scan them, which uses the link up before you can. If that happens, use a password.</span>',
     '    </p>',
     '  </form>',
     '</dialog>'
   ].join('\n');
+
+  var PWDIALOG = [
+    '<dialog class="sheet" id="hlaPw" aria-labelledby="hlaPwTitle">',
+    '  <form method="dialog" class="sheet__in" id="hlaPwForm" novalidate>',
+    '    <div class="sheet__top">',
+    '      <div><span class="sheet__lot">Paddle</span>',
+    '           <h2 id="hlaPwTitle">Set a new password</h2></div>',
+    '      <button class="x" type="button" id="hlaPwClose" aria-label="Close">&times;</button>',
+    '    </div>',
+    '    <div class="field">',
+    '      <label for="hlaPwNew">New password</label>',
+    '      <input type="password" id="hlaPwNew" autocomplete="new-password">',
+    '      <p class="hint">At least six characters.</p>',
+    '    </div>',
+    '    <div class="field">',
+    '      <label for="hlaPwAgain">Type it again</label>',
+    '      <input type="password" id="hlaPwAgain" autocomplete="new-password">',
+    '    </div>',
+    '    <p class="sheet__err" id="hlaPwErr" role="alert"></p>',
+    '    <button class="btn btn--block" type="submit" id="hlaPwSubmit">Save password</button>',
+    '    <p class="sheet__fine" id="hlaPwFine"></p>',
+    '  </form>',
+    '</dialog>'
+  ].join('\n');
+
+  var pw = {};
+  function buildPw() {
+    if (pw.dialog) return;
+    var host = document.createElement('div');
+    host.innerHTML = PWDIALOG;
+    document.body.appendChild(host.firstChild);
+    pw.dialog = document.getElementById('hlaPw');
+    pw.form   = document.getElementById('hlaPwForm');
+    pw.a      = document.getElementById('hlaPwNew');
+    pw.b      = document.getElementById('hlaPwAgain');
+    pw.err    = document.getElementById('hlaPwErr');
+    pw.fine   = document.getElementById('hlaPwFine');
+    pw.submit = document.getElementById('hlaPwSubmit');
+    pw.title  = document.getElementById('hlaPwTitle');
+    document.getElementById('hlaPwClose').addEventListener('click', function () { pw.dialog.close(); });
+    pw.dialog.addEventListener('click', function (e) { if (e.target === pw.dialog) pw.dialog.close(); });
+    pw.form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var a = pw.a.value || '', b = pw.b.value || '';
+      if (a.length < 6) { pw.err.textContent = 'At least six characters.'; pw.a.focus(); return; }
+      if (a !== b) { pw.err.textContent = 'Those two do not match.'; pw.b.focus(); return; }
+      pw.submit.disabled = true;
+      pw.err.textContent = '';
+      API.changePassword(a)
+        .then(function () {
+          pw.a.value = ''; pw.b.value = '';
+          pw.dialog.close();
+          return refresh();
+        })
+        .catch(function (err) { pw.err.textContent = err.message || 'Could not save that.'; })
+        .then(function () { pw.submit.disabled = false; });
+    });
+  }
+
+  function openPassword(opts) {
+    buildPw();
+    opts = opts || {};
+    pw.a.value = ''; pw.b.value = '';
+    pw.err.textContent = '';
+    pw.submit.disabled = false;
+    pw.title.textContent = opts.recovery ? 'Set a new password' : 'Change your password';
+    pw.fine.textContent = opts.recovery
+      ? 'You arrived from a recovery link. Choose a password and you are signed in.'
+      : 'You stay signed in on this device.';
+    pw.dialog.showModal();
+    pw.a.focus();
+  }
 
   var el = {};
   function build() {
@@ -82,6 +156,7 @@
     el.modeIn.addEventListener('click',  function () { setMode('signin'); });
     el.modeReg.addEventListener('click', function () { setMode('register'); });
     document.getElementById('hlaMagic').addEventListener('click', sendLink);
+    document.getElementById('hlaForgot').addEventListener('click', sendReset);
     el.form.addEventListener('submit', submit);
   }
 
@@ -170,6 +245,21 @@
       .then(function () { b.disabled = false; });
   }
 
+  function sendReset() {
+    var email = (el.email.value || '').trim();
+    if (!email) { el.err.textContent = 'Enter your email first.'; el.email.focus(); return; }
+    var b = document.getElementById('hlaForgot');
+    b.disabled = true;
+    el.err.textContent = '';
+    API.requestReset(email)
+      .then(function (r) {
+        el.fine.textContent = 'Reset sent to ' + r.email +
+          '. It works once and expires in an hour, so open it soon.';
+      })
+      .catch(function (err) { el.err.textContent = err.message || 'Could not send that.'; })
+      .then(function () { b.disabled = false; });
+  }
+
   /* ---------- session ---------- */
   function refresh() {
     if (!API.me) return Promise.resolve(session);
@@ -231,6 +321,13 @@
       : (p.get('error_description') || 'That sign-in link did not work.').replace(/\+/g, ' ');
   }
 
+  /* Someone arriving from a recovery link gets straight to setting one. */
+  if (API.onPasswordRecovery) {
+    API.onPasswordRecovery(function () {
+      refresh().then(function () { openPassword({ recovery: true }); });
+    });
+  }
+
   global.HLA_AUTH = {
     get session() { return session; },
     refresh: refresh,
@@ -240,6 +337,7 @@
     bindPaddle: bindPaddle,
     isLeading: function (lotNo) { var p = byLot[lotNo]; return !!(p && p.is_leading); },
     myMax: function (lotNo) { var p = byLot[lotNo]; return p ? p.my_max_cents : null; },
-    readHashError: readHashError
+    readHashError: readHashError,
+    openPassword: openPassword
   };
 })(window);

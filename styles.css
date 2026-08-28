@@ -584,3 +584,9 @@ button{ font:inherit; color:inherit; }
   .office td{ border:0; padding:0; }
   .office td:nth-child(n+2){ font-size:.85rem; }
 }
+.authalt__or{ color:var(--ink-3); margin:0 .3rem; }
+.acct{
+  font-family:var(--f-data); font-size:.74rem; color:var(--ink-3);
+  margin:0 0 1.8rem; padding-bottom:1.2rem; border-bottom:1px solid var(--line);
+}
+.acct b{ color:var(--ink); font-weight:400; }

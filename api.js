@@ -124,6 +124,13 @@
         return Promise.reject(AuctionError(
           'This is the demonstration build, so there is no paddle to issue.'));
       },
+      changePassword: function () {
+        return Promise.reject(AuctionError('There are no passwords in the demonstration build.'));
+      },
+      requestReset: function () {
+        return Promise.reject(AuctionError('There are no passwords in the demonstration build.'));
+      },
+      onPasswordRecovery: function () {},
 
       placeBid: function (lotNo, maxCents, protection) {
         var lot = lots.filter(function (l) { return l.lot_no === lotNo; })[0];
@@ -249,6 +256,13 @@
       /* The dev server issues a paddle on first sign-in, so registering and
          signing in are the same call here. */
       register: function (email) { return this.signIn(email); },
+      changePassword: function () {
+        return Promise.reject(AuctionError('The dev server has no passwords.'));
+      },
+      requestReset: function () {
+        return Promise.reject(AuctionError('The dev server has no passwords.'));
+      },
+      onPasswordRecovery: function () {},
 
       signIn: function (email /*, password: dev server is passwordless */) {
         return req('/api/signin', { method: 'POST', body: { email: email } })
@@ -502,6 +516,56 @@
           if (r.error) throw AuctionError(r.error.message, r.error.code);
           return r.data;
         });
+      },
+
+      /* Change your own password while signed in. No email involved, so this
+         is the one recovery path that works for everybody. */
+      changePassword: function (newPassword) {
+        return client()
+          .then(function (c) { return c.auth.updateUser({ password: newPassword }); })
+          .then(function (r) {
+            if (r.error) {
+              var m = r.error.message || '';
+              if (/should be at least|password/i.test(m) && /6|characters|short|weak/i.test(m)) {
+                throw AuctionError('Choose a longer password — at least six characters.');
+              }
+              if (/same.*password|different from the old/i.test(m)) {
+                throw AuctionError('That is the password you already have.');
+              }
+              throw AuctionError(m);
+            }
+            return true;
+          });
+      },
+
+      /* Emails a recovery link. Same single-use caveat as the sign-in link:
+         a mail provider that pre-scans links will spend it before the person
+         clicks. Said plainly in the interface rather than left to surprise. */
+      requestReset: function (email) {
+        var back = location.origin + location.pathname.replace(/[^/]*$/, '') + 'paddle.html';
+        return client()
+          .then(function (c) { return c.auth.resetPasswordForEmail(email, { redirectTo: back }); })
+          .then(function (r) {
+            if (r.error) {
+              var m = r.error.message || '';
+              if (/rate limit/i.test(m)) {
+                throw AuctionError('The email limit has been reached for this hour. Try again later, or call the office.');
+              }
+              throw AuctionError(m);
+            }
+            return { email: email };
+          });
+      },
+
+      /* Supabase fires PASSWORD_RECOVERY once a recovery link establishes a
+         session. The hash is consumed by the library, so this event is the
+         only reliable signal that someone arrived to set a new password. */
+      onPasswordRecovery: function (fn) {
+        client().then(function (c) {
+          c.auth.onAuthStateChange(function (event) {
+            if (event === 'PASSWORD_RECOVERY') fn();
+          });
+        }).catch(function () {});
       },
 
       /* Office view. The RPCs check is_staff server-side and raise otherwise,

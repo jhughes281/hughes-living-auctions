@@ -39,6 +39,18 @@
 
     document.getElementById('paddleEyebrow').textContent = 'Paddle ' + s.paddle;
 
+    /* Account controls. Without a way to change it, a reset leaves someone
+       stuck with whatever password was set for them. */
+    var acct = document.getElementById('posAccount');
+    if (acct) {
+      acct.innerHTML =
+        '<p class="acct">Signed in as <b>' + esc(s.email || '') + '</b>' +
+        ' &middot; <button class="linkbtn" id="acctPw">Change your password</button></p>';
+      document.getElementById('acctPw').addEventListener('click', function () {
+        AUTH.openPassword();
+      });
+    }
+
     var rows = (s.positions || []).slice().sort(function (a, b) {
       /* losing first — those are the ones that need you */
       if (a.is_leading !== b.is_leading) return a.is_leading ? 1 : -1;
