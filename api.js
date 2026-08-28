@@ -504,6 +504,33 @@
         });
       },
 
+      /* Office view. The RPCs check is_staff server-side and raise otherwise,
+         so a non-staff caller gets an error rather than an empty list. */
+      staffLots: function () {
+        return client().then(function (c) { return c.rpc('staff_lots'); })
+          .then(function (r) {
+            if (r.error) {
+              if (/not staff/i.test(r.error.message || '')) {
+                throw AuctionError('This paddle does not have office access.', 'NOTSTAFF');
+              }
+              throw AuctionError(r.error.message);
+            }
+            return r.data || [];
+          });
+      },
+      staffSummary: function () {
+        return client().then(function (c) { return c.rpc('staff_summary'); })
+          .then(function (r) {
+            if (r.error) {
+              if (/not staff/i.test(r.error.message || '')) {
+                throw AuctionError('This paddle does not have office access.', 'NOTSTAFF');
+              }
+              throw AuctionError(r.error.message);
+            }
+            return (r.data && r.data[0]) || null;
+          });
+      },
+
       isMine: function (lot) {
         var p = positions[lot.lot_no];
         return !!(p && p.is_leading);

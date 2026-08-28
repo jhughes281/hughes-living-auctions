@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lot — Hughes Living Auctions</title>
-<meta name="description" content="A single repaired lot: what was found, what was fixed, and what is still wrong.">
+<title>Office — Hughes Living Auctions</title>
+<meta name="description" content="Operator view: what closed, who won, and what to collect.">
 <link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
-<meta property="og:title" content="Lot — Hughes Living Auctions">
+<meta property="og:title" content="Office — Hughes Living Auctions">
 <meta property="og:description" content="Furniture bought by the pallet, repaired on the bench, and auctioned with the damage printed on the tag.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="brand/og-logo.png">
@@ -14,6 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600&family=Courier+Prime:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -51,12 +52,19 @@
 </header>
 
 <main id="main">
-<section class="band lot-page">
+<section class="band">
   <div class="wrap">
-    <p class="crumb"><a href="index.html#lots">&larr; All open lots</a></p>
-    <div id="lotHost" class="lot-host">
-      <p class="lots__empty">Loading the lot&hellip;</p>
+    <div class="band__head">
+      <div>
+        <p class="eyebrow" id="staffEyebrow">Office</p>
+        <h1 class="sect-title">What closed, who won</h1>
+      </div>
+      <p class="lede">Winner names and addresses appear here and nowhere else on
+        the site. No bidder can see them, and neither can a paddle without office
+        access.</p>
     </div>
+    <div id="staffSummary"></div>
+    <div id="staffHost"><p class="lots__empty">Loading&hellip;</p></div>
   </div>
 </section>
 </main>
@@ -99,6 +107,6 @@
 <script src="config.js"></script>
 <script src="api.js"></script>
 <script src="auth.js"></script>
-<script src="lot.js"></script>
+<script src="staff.js"></script>
 </body>
 </html>
