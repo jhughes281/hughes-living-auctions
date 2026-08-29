@@ -65,12 +65,12 @@ button{ font:inherit; color:inherit; }
   border-bottom:1px solid var(--line);
 }
 @supports (backdrop-filter: blur(4px)){ .masthead{ backdrop-filter:saturate(140%) blur(6px); } }
-.masthead__in{ display:flex; align-items:center; gap:1.25rem; min-height:74px; }
+.masthead__in{ display:flex; align-items:center; gap:1.25rem; min-height:92px; }
 .mark{ display:flex; align-items:center; margin-right:auto; text-decoration:none; }
 /* real EB Garamond lockup, sized by height — logo ink is #3F3B33 from the source file */
-.mark__logo{ height:44px; width:auto; display:block; }
+.mark__logo{ height:52px; width:auto; display:block; }
 .mark--foot .mark__logo{ height:104px; }
-@media (min-width:900px){ .mark__logo{ height:48px; } }
+@media (min-width:900px){ .mark__logo{ height:64px; } }
 
 .nav{ display:none; gap:1.6rem; }
 .nav a{ text-decoration:none; font-size:.87rem; color:var(--ink-2); padding-block:.35rem; border-bottom:1px solid transparent; }
@@ -397,7 +397,7 @@ button{ font:inherit; color:inherit; }
 /* ---------- touch sizing: nothing tappable under 44px ---------- */
 @media (pointer: coarse), (max-width: 899px){
   .mark{ padding-block:.5rem; }
-  .mark__logo{ height:40px; }
+  .mark__logo{ height:46px; }
   .burger{ width:44px; height:44px; justify-content:center; align-content:center; justify-items:center; }
   .watch{ width:44px; height:44px; }
   .watch svg{ width:17px; height:17px; }
