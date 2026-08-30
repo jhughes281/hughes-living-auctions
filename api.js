@@ -321,6 +321,14 @@
        ESM imports carry no integrity check. Pinned, hash recorded beside it.
        To upgrade: npm i @supabase/supabase-js@<version>, copy dist/umd, redo
        the hash, change the tag in index.html. */
+    /* Every emailed link must carry the FULL path back. Left unspecified the
+       redirect falls back to the origin, dropping /hughes-living-auctions/ —
+       which on GitHub Pages is a 404 with a perfectly good token stranded in
+       the address bar. That is exactly what happened to the sign-in link. */
+    function returnUrl() {
+      return location.origin + location.pathname.replace(/[^/]*$/, '') + 'paddle.html';
+    }
+
     var LIB = 'vendor/supabase-js-2.112.4.js';
     var libLoading = null;
     function loadLib() {
@@ -480,7 +488,10 @@
                 return { magicLink: false, email: email };
               });
           }
-          return c.auth.signInWithOtp({ email: email }).then(function (r) {
+          return c.auth.signInWithOtp({
+            email: email,
+            options: { emailRedirectTo: returnUrl() }
+          }).then(function (r) {
             if (r.error) {
               var m = r.error.message || '';
               if (/rate limit/i.test(m)) {
@@ -542,9 +553,10 @@
          a mail provider that pre-scans links will spend it before the person
          clicks. Said plainly in the interface rather than left to surprise. */
       requestReset: function (email) {
-        var back = location.origin + location.pathname.replace(/[^/]*$/, '') + 'paddle.html';
         return client()
-          .then(function (c) { return c.auth.resetPasswordForEmail(email, { redirectTo: back }); })
+          .then(function (c) {
+            return c.auth.resetPasswordForEmail(email, { redirectTo: returnUrl() });
+          })
           .then(function (r) {
             if (r.error) {
               var m = r.error.message || '';
