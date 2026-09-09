@@ -55,27 +55,75 @@
       (on ? ' fill="currentColor"' : '') + '/></svg>';
   }
 
-  function cardHTML(lot) {
+  /* ---------- lot state, read the same way everywhere ----------
+     The engine owns status, but the page still has to draw a lot whose clock
+     ran out before the sweeper marked it, and one that is listed but has not
+     opened yet. Three answers: 'open', 'upcoming', 'closed'. */
+  function stateOf(lot) {
+    if (lot.status !== 'open') return 'closed';
+    var now = API.serverNow().getTime();
+    if (new Date(lot.ends_at).getTime() <= now) return 'closed';
+    if (lot.opens_at && new Date(lot.opens_at).getTime() > now) return 'upcoming';
+    return 'open';
+  }
+  function isOpen(lot)   { return stateOf(lot) === 'open'; }
+  /* `sold` is the engine's word (0007): false when a reserve was not met even
+     though bids were placed. Older rows and the demo backend do not carry it,
+     so fall back to the bid count there. */
+  function hasHammer(lot){
+    if (stateOf(lot) !== 'closed') return false;
+    return typeof lot.sold === 'boolean' ? lot.sold : lot.bid_count > 0;
+  }
+
+  function stubLabels(lot) {
+    var st = stateOf(lot);
+    return {
+      price: st === 'closed'
+        ? (hasHammer(lot) ? 'Hammer' : lot.bid_count > 0 ? 'Closed, reserve not met' : 'Closed, no bids')
+        : 'Current bid',
+      clock: st === 'closed' ? 'Closed' : st === 'upcoming' ? 'Opens in' : 'Closes in',
+      button: st === 'closed' ? 'Closed' : st === 'upcoming' ? 'Not open yet' : 'Place bid',
+      disabled: st !== 'open'
+    };
+  }
+
+  /* One card template for the grid and the hero. The hero gets the live badge
+     where the grid card names its pallet, and an h2 because it is the page's
+     first real heading after the title. */
+  function cardHTML(lot, opts) {
+    opts = opts || {};
     var on = watching.indexOf(lot.lot_no) !== -1;
-    var closed = lot.status !== 'open';
+    var st = stateOf(lot);
+    var L = stubLabels(lot);
+    var mine = !!(window.HLA_AUTH && window.HLA_AUTH.isLeading(lot.lot_no));
+    var H = opts.feature ? 'h2' : 'h3';
+    var badge = opts.feature
+      ? (st === 'open' ? '<span class="live">Bidding now</span>'
+         : st === 'upcoming' ? '<span class="live live--soon">Opens soon</span>'
+         : '<span class="live live--done">Last to close</span>')
+      : '<span class="tag__src">Pallet ' + esc(lot.pallet) + '</span>';
     return '' +
-    '<article class="tag' + (window.HLA_AUTH && window.HLA_AUTH.isLeading(lot.lot_no) ? ' is-mine' : '') + '" data-lot="' + lot.lot_no + '">' +
+    '<article class="tag' + (opts.feature ? ' tag--feature' : '') + (mine ? ' is-mine' : '') +
+             '" data-lot="' + lot.lot_no + '" data-state="' + st + '">' +
       '<span class="tag__punch" aria-hidden="true"></span>' +
       '<div class="tag__head">' +
         '<span class="tag__id">LOT ' + lot.lot_no + '</span>' +
-        '<span class="tag__src">Pallet ' + esc(lot.pallet) + '</span>' +
+        badge +
         '<button class="watch" type="button" aria-pressed="' + (on ? 'true' : 'false') +
                 '" aria-label="Watch lot ' + lot.lot_no + '">' + starSVG(on) + '</button>' +
       '</div>' +
       '<div class="tag__photo">' +
         '<a href="lot.html?lot=' + lot.lot_no + '" aria-label="Open lot ' + lot.lot_no + '">' +
-        '<img src="' + esc(lot.image_path) + '" alt="' + esc(lot.alt_text) + '" loading="lazy" width="800" height="600">' +
+        '<img src="' + esc(lot.image_path) + '" alt="' + esc(lot.alt_text) + '"' +
+             (opts.feature ? ' fetchpriority="high"' : ' loading="lazy"') +
+             ' width="800" height="600">' +
         '</a>' +
         '<span class="grade grade--' + esc(lot.grade) + '">Grade ' + esc(lot.grade).toUpperCase() + '</span>' +
       '</div>' +
       '<div class="tag__body">' +
-        '<p class="tag__cat">' + esc(lot.category) + '</p>' +
-        '<h3 class="tag__title"><a href="lot.html?lot=' + lot.lot_no + '">' + esc(lot.title) + '</a></h3>' +
+        '<p class="tag__cat">' + esc(lot.category) +
+          (opts.feature && lot.pallet ? ' &middot; Pallet ' + esc(lot.pallet) : '') + '</p>' +
+        '<' + H + ' class="tag__title"><a href="lot.html?lot=' + lot.lot_no + '">' + esc(lot.title) + '</a></' + H + '>' +
         (lot.retail_cents ? '<p class="tag__retail">Retail <s>' + money(lot.retail_cents) + '</s></p>' : '') +
         '<dl class="ledger">' +
           '<div class="ledger__row"><dt>Found</dt><dd>' + esc(lot.found) + '</dd></div>' +
@@ -85,22 +133,43 @@
       '</div>' +
       '<div class="stub">' +
         '<div class="stub__bid">' +
-          '<span class="lbl">' + (closed ? 'Hammer' : 'Current bid') + '</span>' +
+          '<span class="lbl">' + L.price + '</span>' +
           '<span class="amt">' + money(priceOf(lot)) + '</span>' +
           '<span class="meta">' + lot.bid_count + (lot.bid_count === 1 ? ' bid' : ' bids') + '</span>' +
         '</div>' +
-        '<div class="stub__clock"><span class="lbl">' + (closed ? 'Closed' : 'Closes in') + '</span>' +
+        '<div class="stub__clock"><span class="lbl">' + L.clock + '</span>' +
           '<time datetime="' + esc(lot.ends_at) + '">—</time></div>' +
-        '<p class="mine-flag">You are the high bidder</p>' +
+        '<p class="mine-flag">' + (opts.feature ? 'You hold this lot' : 'You are the high bidder') + '</p>' +
         '<div class="stub__acts">' +
-          '<button class="btn btn--bid" type="button"' + (closed ? ' disabled' : '') + '>' +
-            (closed ? 'Closed' : 'Place bid') + '</button>' +
-          (lot.buy_now_cents && !closed
+          '<button class="btn btn--bid" type="button"' + (L.disabled ? ' disabled' : '') + '>' + L.button + '</button>' +
+          (lot.buy_now_cents && st === 'open'
             ? '<button class="btn btn--buy" type="button">Buy ' + money(lot.buy_now_cents) + '</button>'
             : '') +
         '</div>' +
       '</div>' +
     '</article>';
+  }
+
+  /* Nothing to feature: say what the schedule is instead of showing a dead lot. */
+  function quietFeatureHTML(upcoming) {
+    var when = upcoming
+      ? 'The next lots open ' + esc(dateWords(upcoming.opens_at)) + '.'
+      : 'Pallets come in Tuesday, lots open Friday, everything closes Sunday night.';
+    return '' +
+    '<article class="tag tag--feature tag--quiet">' +
+      '<span class="tag__punch" aria-hidden="true"></span>' +
+      '<div class="tag__body">' +
+        '<p class="tag__cat">Between sales</p>' +
+        '<h2 class="tag__title">Nothing is open right now.</h2>' +
+        '<p class="tag__retail">' + when + ' Results from the last sale are <a href="#closed">below</a>.</p>' +
+      '</div>' +
+    '</article>';
+  }
+
+  function dateWords(iso) {
+    var d = new Date(iso);
+    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) +
+           ' at ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   }
 
   /* A lot with no bids sits at its opening price; the engine reports 0 until
@@ -120,39 +189,55 @@
   var empty   = document.getElementById('lotEmpty');
   var countEl = document.getElementById('lotCount');
   var feature = document.getElementById('feature');
-
-  function cardFor(lotNo) {
-    return document.querySelector('.tag[data-lot="' + lotNo + '"]');
-  }
+  var lotsLede   = document.getElementById('lotsLede');
+  var eyebrow    = document.getElementById('heroEyebrow');
+  var closedBody = document.getElementById('closedBody');
+  var closedTbl  = document.getElementById('closedTable');
+  var closedEmpty= document.getElementById('closedEmpty');
+  var closedLede = document.getElementById('closedLede');
 
   function paintClock(lot) {
     var els = document.querySelectorAll('.tag[data-lot="' + lot.lot_no + '"] .stub__clock');
-    var left = new Date(lot.ends_at).getTime() - API.serverNow().getTime();
+    var st = stateOf(lot);
+    var now = API.serverNow().getTime();
+    var left = st === 'upcoming'
+      ? new Date(lot.opens_at).getTime() - now
+      : new Date(lot.ends_at).getTime() - now;
     for (var i = 0; i < els.length; i++) {
       var box = els[i], t = box.querySelector('time');
       if (!t) continue;
       t.textContent = formatLeft(left);
-      t.setAttribute('datetime', lot.ends_at);
-      box.classList.toggle('is-final', left > 0 && left < 15 * 60 * 1000);
-      box.classList.toggle('is-done', left <= 0);
+      t.setAttribute('datetime', st === 'upcoming' ? lot.opens_at : lot.ends_at);
+      box.classList.toggle('is-final', st === 'open' && left < 15 * 60 * 1000);
+      box.classList.toggle('is-done', st === 'closed');
     }
+    /* A clock that just ran out changes the lot's state; the card and the
+       grid it sits in need to follow, even before the sweeper's row arrives. */
+    var card = document.querySelector('.tag[data-lot="' + lot.lot_no + '"]');
+    if (card && card.dataset.state !== st) render();
   }
 
   function paintLot(lot) {
     var cards = document.querySelectorAll('.tag[data-lot="' + lot.lot_no + '"]');
+    var L = stubLabels(lot);
+    var st = stateOf(lot);
     for (var i = 0; i < cards.length; i++) {
       var card = cards[i];
+      card.dataset.state = st;
+      var lbl = card.querySelector('.stub__bid .lbl');
+      if (lbl) lbl.textContent = L.price;
       var amt = card.querySelector('.stub__bid .amt');
       if (amt) amt.textContent = money(priceOf(lot));
       var meta = card.querySelector('.stub__bid .meta');
       if (meta) meta.textContent = lot.bid_count + (lot.bid_count === 1 ? ' bid' : ' bids');
+      var clk = card.querySelector('.stub__clock .lbl');
+      if (clk) clk.textContent = L.clock;
       card.classList.toggle('is-mine', !!(window.HLA_AUTH && window.HLA_AUTH.isLeading(lot.lot_no)));
 
-      var closed = lot.status !== 'open';
       var bidBtn = card.querySelector('.btn--bid');
-      if (bidBtn) { bidBtn.disabled = closed; bidBtn.textContent = closed ? 'Closed' : 'Place bid'; }
+      if (bidBtn) { bidBtn.disabled = L.disabled; bidBtn.textContent = L.button; }
       var buyBtn = card.querySelector('.btn--buy');
-      if (buyBtn && (!lot.buy_now_cents || closed)) buyBtn.remove();
+      if (buyBtn && (!lot.buy_now_cents || st !== 'open')) buyBtn.remove();
     }
     paintClock(lot);
   }
@@ -177,7 +262,7 @@
   function passes(lot) {
     var left = new Date(lot.ends_at).getTime() - API.serverNow().getTime();
     switch (filter) {
-      case 'soon':  return lot.status === 'open' && left > 0 && left < 24 * 3600 * 1000;
+      case 'soon':  return isOpen(lot) && left < 24 * 3600 * 1000;
       case 'buy':   return !!lot.buy_now_cents;
       case 'clean': return lot.grade === 'a';
       case 'watch': return watching.indexOf(lot.lot_no) !== -1;
@@ -185,15 +270,106 @@
     }
   }
 
+  /* The hero is the open lot with the most action; ties go to the one closing
+     soonest. With nothing open, the most recent hammer stands in, and with
+     nothing at all the card says when the next sale is. */
+  function chooseHero() {
+    var open = LOTS.filter(isOpen).sort(function (a, b) {
+      return (b.bid_count - a.bid_count) || (new Date(a.ends_at) - new Date(b.ends_at));
+    });
+    if (open.length) return open[0];
+    var upcoming = LOTS.filter(function (l) { return stateOf(l) === 'upcoming'; })
+      .sort(function (a, b) { return new Date(a.opens_at) - new Date(b.opens_at); });
+    if (upcoming.length) return upcoming[0];
+    var hammered = LOTS.filter(hasHammer).sort(function (a, b) {
+      return new Date(b.ends_at) - new Date(a.ends_at);
+    });
+    return hammered[0] || null;
+  }
+
+  function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+  function listWords(items) {
+    if (items.length <= 1) return items.join('');
+    if (items.length === 2) return items[0] + ' & ' + items[1];
+    return items.slice(0, -1).join(', ') + ' & ' + items[items.length - 1];
+  }
+
+  function paintHeader(hero) {
+    var open = LOTS.filter(isOpen);
+    var upcoming = LOTS.filter(function (l) { return stateOf(l) === 'upcoming'; });
+    var pallets = [];
+    open.forEach(function (l) { if (l.pallet && pallets.indexOf(l.pallet) === -1) pallets.push(l.pallet); });
+    pallets.sort();
+
+    if (open.length) {
+      eyebrow.textContent = 'Bidding open' +
+        (pallets.length ? ' · ' + (pallets.length === 1 ? 'Pallet ' : 'Pallets ') + listWords(pallets) : '');
+      var rest = open.length - (hero && isOpen(hero) ? 1 : 0);
+      lotsLede.textContent = (rest > 0
+          ? plural(rest, 'more piece', 'more pieces') +
+            (pallets.length === 1 ? ' off pallet ' + pallets[0] : pallets.length ? ' off ' + pallets.length + ' pallets' : '') + '. '
+          : 'One lot open. ') +
+        'Each opened at a dollar and closes on its own clock. Bid in the last two minutes and the clock pushes out two more.';
+    } else if (upcoming.length) {
+      eyebrow.textContent = 'Next sale opens ' + dateWords(upcoming[0].opens_at);
+      lotsLede.textContent = plural(upcoming.length, 'lot is', 'lots are') +
+        ' listed and not open yet. Read the tags now; the clocks start ' + dateWords(upcoming[0].opens_at) + '.';
+    } else {
+      eyebrow.textContent = 'Between sales · Pallets in Tuesday, lots open Friday';
+      lotsLede.textContent = 'Nothing is open right now. Pallets come in Tuesday, lots open Friday and close Sunday night. What hammered last time is further down the page.';
+    }
+  }
+
   function render() {
-    var shown = LOTS.filter(function (l) { return l.lot_no !== 118 && passes(l); });
-    grid.innerHTML = shown.map(cardHTML).join('');
+    var hero = chooseHero();
+    var live = LOTS.filter(function (l) { return stateOf(l) !== 'closed'; });
+    var shown = live.filter(function (l) { return !(hero && l.lot_no === hero.lot_no) && passes(l); });
+
+    feature.innerHTML = hero ? cardHTML(hero, { feature: true })
+                             : quietFeatureHTML(null);
+    grid.innerHTML = shown.map(function (l) { return cardHTML(l); }).join('');
+
+    var openCount = LOTS.filter(isOpen).length;
     empty.hidden = shown.length > 0;
-    countEl.textContent = shown.length + (shown.length === 1 ? ' lot' : ' lots') +
-                          (filter === 'all' ? ' open' : ' shown');
+    empty.textContent = live.length === 0
+      ? 'Nothing is open right now. The next pallet’s lots print here the moment they open.'
+      : 'No lots match that filter right now.';
+    countEl.textContent = filter === 'all'
+      ? (openCount ? plural(openCount, 'lot', 'lots') + ' open' : 'Nothing open')
+      : plural(shown.length, 'lot', 'lots') + ' shown';
+
+    paintHeader(hero);
+    renderClosed();
+    if (hero) paintLot(hero);
     shown.forEach(paintClock);
-    var f = byNo[118];
-    if (f) paintLot(f);
+  }
+
+  /* ---------- what closed ---------- */
+  function renderClosed() {
+    var rows = LOTS.filter(hasHammer).sort(function (a, b) {
+      return new Date(b.ends_at) - new Date(a.ends_at);
+    }).slice(0, 12);
+    closedTbl.hidden = rows.length === 0;
+    closedEmpty.hidden = rows.length > 0;
+    if (!rows.length) {
+      closedLede.textContent = 'Hammer prices print here as lots close, with the reason each piece was on our floor instead of a showroom.';
+      closedBody.innerHTML = '';
+      return;
+    }
+    var pallets = [];
+    rows.forEach(function (l) { if (l.pallet && pallets.indexOf(l.pallet) === -1) pallets.push(l.pallet); });
+    pallets.sort();
+    closedLede.textContent = 'Hammer prices from ' +
+      (pallets.length ? (pallets.length === 1 ? 'pallet ' : 'pallets ') + listWords(pallets) : 'the last sale') +
+      ', with the reason each piece was on our floor instead of a showroom.';
+    closedBody.innerHTML = rows.map(function (l) {
+      return '<tr>' +
+        '<td><a href="lot.html?lot=' + l.lot_no + '">' + esc(l.title) + '</a></td>' +
+        '<td>' + (l.retail_cents ? money(l.retail_cents) : '—') + '</td>' +
+        '<td>' + money(l.current_price_cents) + '</td>' +
+        '<td>' + esc(l.found) + ' ' + esc(l.fixed) + '</td>' +
+      '</tr>';
+    }).join('');
   }
 
   var rail = document.querySelector('.rail');
@@ -248,6 +424,18 @@
   var sTotal  = document.getElementById('sheetTotal');
   var sSubmit = document.getElementById('sheetSubmit');
   var current = null, returnTo = null;
+  /* One idempotency key per opening of the sheet, reused across retries. A
+     request that timed out after the engine recorded it is replayed, not
+     repeated, when the person presses the button again. A fresh key per
+     press would defeat the whole mechanism. */
+  var bidKey = null;
+  function newKey(prefix, lotNo) {
+    var rnd = (window.crypto && crypto.getRandomValues)
+      ? Array.prototype.map.call(crypto.getRandomValues(new Uint8Array(8)), function (b) {
+          return ('0' + b.toString(16)).slice(-2); }).join('')
+      : Math.random().toString(16).slice(2);
+    return prefix + '-' + lotNo + '-' + rnd;
+  }
 
   function paintTotals() {
     if (!current) return;
@@ -273,6 +461,7 @@
   function openSheet(lot, opener) {
     if (!lot) return;
     current = lot; returnTo = opener || null;
+    bidKey = newKey('bid', lot.lot_no);
     sLot.textContent = 'Lot ' + lot.lot_no;
     sTitle.textContent = lot.title;
     fErr.textContent = '';
@@ -314,11 +503,11 @@
 
     sSubmit.disabled = true;
     fErr.textContent = '';
-    /* One key per attempt, so a double-submit or a retry cannot bid twice. */
-    var key = 'bid-' + current.lot_no + '-' + cents + '-' + Date.now();
+    var key = bidKey || newKey('bid', current.lot_no);
 
     API.placeBid(current.lot_no, cents, fProtect.checked, key)
       .then(function (r) {
+        bidKey = null;                       /* spent; the next opening mints another */
         return refreshOne(current.lot_no).then(function () {
           if (r.extended) flashExtend(byNo[current.lot_no] || current);
           closeSheet();
@@ -341,7 +530,7 @@
       return;
     }
     if (!confirm('Buy lot ' + lot.lot_no + ' now for ' + money(lot.buy_now_cents) + '?')) return;
-    API.buyNow(lot.lot_no, false, 'buy-' + lot.lot_no + '-' + Date.now())
+    API.buyNow(lot.lot_no, false, newKey('buy', lot.lot_no))
       .then(function (r) {
         say('Lot ' + r.lot_no + ' is yours at ' + money(r.price_cents) + '.');
         return refreshOne(lot.lot_no);
@@ -398,11 +587,17 @@
   function onLotChange(row) {
     var lot = byNo[row.lot_no];
     if (!lot) return;
-    var wasExt = lot.extension_count;
-    ['status', 'current_price_cents', 'bid_count', 'ends_at', 'extension_count', 'buy_now_cents']
+    var wasExt = lot.extension_count, wasState = stateOf(lot);
+    ['status', 'current_price_cents', 'bid_count', 'ends_at', 'extension_count', 'buy_now_cents', 'sold']
       .forEach(function (k) { if (row[k] !== undefined) lot[k] = row[k]; });
     lot.min_next_cents = 0;                      /* force recompute from price */
-    paintLot(lot);
+    /* A lot that just closed leaves the grid and may join the results table;
+       a first bid can change which lot is featured. Re-lay the page then. */
+    var hero = chooseHero();
+    var heroEl = document.querySelector('.tag--feature[data-lot]');
+    var heroChanged = !heroEl || !hero || Number(heroEl.dataset.lot) !== hero.lot_no;
+    if (stateOf(lot) !== wasState || heroChanged) render();
+    else paintLot(lot);
     if (row.extension_count > wasExt) flashExtend(lot);
   }
 

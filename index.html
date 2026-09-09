@@ -9,7 +9,9 @@
 <meta property="og:title" content="Hughes Living Auctions">
 <meta property="og:description" content="Furniture bought by the pallet, repaired on the bench, and auctioned with the damage printed on the tag.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="brand/og-logo.png">
+<meta property="og:image" content="https://jhughes281.github.io/hughes-living-auctions/brand/og-logo.png">
+<meta property="og:url" content="https://jhughes281.github.io/hughes-living-auctions/">
+<link rel="canonical" href="https://jhughes281.github.io/hughes-living-auctions/">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -54,7 +56,7 @@
   <section class="hero">
     <div class="wrap hero__grid">
       <div>
-        <p class="eyebrow">Bidding open &middot; Pallet 0442 &amp; 0447</p>
+        <p class="eyebrow" id="heroEyebrow">The repair bench behind Hughes Living Co.</p>
         <h1>Nothing here<br>arrived <em>perfect.</em></h1>
         <p>We buy returns, freight damage and short-parts furniture by the pallet, fix it on the bench, and open it at a dollar. What was wrong with your piece is printed on its tag, along with what we did about it and what we could not.</p>
         <div class="hero__acts">
@@ -63,45 +65,17 @@
         </div>
       </div>
 
-      <article class="tag tag--feature" id="feature" data-lot="118">
-        <span class="tag__punch" aria-hidden="true"></span>
-        <div class="tag__head">
-          <span class="tag__id">LOT 118</span>
-          <span class="live">Bidding now</span>
-          <button class="watch" type="button" data-watch="118" aria-pressed="false" aria-label="Watch lot 118">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg>
-          </button>
-        </div>
-        <div class="tag__photo">
-          <img src="img/lot-sectional.jpg" alt="Green velvet double chaise sectional, photographed from the front left." width="1000" height="723" fetchpriority="high">
-          <span class="grade grade--b">Grade B</span>
-        </div>
-        <div class="tag__body">
-          <p class="tag__cat">Sectional &middot; Pallet 0442 &middot; 118 in.</p>
-          <h2 class="tag__title">Ariana Double Chaise Sectional, Green Velvet</h2>
-          <p class="tag__retail">Retail <s>$2,499</s> &middot; 4 boxes, freight-damaged carton</p>
-          <dl class="ledger">
-            <div class="ledger__row"><dt>Found</dt><dd>Right chaise seam split about nine inches. Carton crushed on one end in transit.</dd></div>
-            <div class="ledger__row is-fixed"><dt>Fixed</dt><dd>Seam restitched in matching thread, frame checked square, all legs re-torqued.</dd></div>
-            <div class="ledger__row is-flaw"><dt>Still</dt><dd>A faint crease in the velvet along the repair. You see it in raking light, not head on.</dd></div>
-          </dl>
-        </div>
-        <div class="stub">
-          <div class="stub__bid">
-            <span class="lbl">Current bid</span>
-            <span class="amt" data-amt>$640</span>
-            <span class="meta" data-bids>23 bids</span>
+      <!-- The featured lot renders from live data: the open lot with the most
+           action, or the last one to close when nothing is open. See app.js. -->
+      <div id="feature" class="feature" aria-live="polite">
+        <article class="tag tag--feature tag--quiet">
+          <span class="tag__punch" aria-hidden="true"></span>
+          <div class="tag__body">
+            <p class="tag__cat">Loading the sale</p>
+            <h2 class="tag__title">Reading the tags&hellip;</h2>
           </div>
-          <div class="stub__clock" data-clock>
-            <span class="lbl">Closes in</span>
-            <time datetime="">--:--:--</time>
-          </div>
-          <p class="mine-flag">You hold this lot</p>
-          <div class="stub__acts">
-            <button class="btn btn--bid" type="button">Place bid</button>
-          </div>
-        </div>
-      </article>
+        </article>
+      </div>
     </div>
   </section>
 
@@ -123,7 +97,7 @@
     <div class="wrap">
       <div class="band__head rise">
         <h2 class="sect-title">Open lots</h2>
-        <p class="lede">Twelve more pieces off the same two pallets. Each opened at a dollar and closes on its own clock. Bid in the last two minutes and the clock pushes out two more.</p>
+        <p class="lede" id="lotsLede">Each lot opens at a dollar and closes on its own clock. Bid in the last two minutes and the clock pushes out two more.</p>
       </div>
 
       <p class="demo-note" id="demoNote" hidden>Demonstration build — there is no auction server behind this page, so bids stay in your browser and nobody else is bidding against you.</p>
@@ -310,23 +284,19 @@
   <section class="band" id="closed">
     <div class="wrap">
       <div class="band__head rise">
-        <h2 class="sect-title">What closed last week</h2>
-        <p class="lede">Hammer prices from pallets 0431 and 0436, with the reason each piece was on our floor instead of a showroom.</p>
+        <h2 class="sect-title">What closed</h2>
+        <p class="lede" id="closedLede">Hammer prices from the most recent lots to close, with the reason each piece was on our floor instead of a showroom.</p>
       </div>
-      <table class="results rise">
+      <!-- Rows render from lots the engine reports closed with at least one bid. -->
+      <table class="results rise" id="closedTable">
         <thead>
           <tr>
             <th scope="col">Lot</th><th scope="col">Retail</th><th scope="col">Hammer</th><th scope="col">Why it was here</th>
           </tr>
         </thead>
-        <tbody>
-          <tr><td>Kanlow rocker recliner, nutmeg</td><td>$729</td><td>$185</td><td>Handle snapped in the box. New handle and cable, cycled 40 times.</td></tr>
-          <tr><td>6-drawer dresser with mirror</td><td>$1,149</td><td>$310</td><td>Shipped with no pulls and no mirror hardware. Full set sourced.</td></tr>
-          <tr><td>Shaggy area rug, 5 &times; 7</td><td>$219</td><td>$45</td><td>Returned with pet hair and a folded corner. Cleaned and blocked flat.</td></tr>
-          <tr><td>Counter table and four stools</td><td>$899</td><td>$265</td><td>One stool had a cracked footrest weld. Re-run and repainted.</td></tr>
-          <tr><td>Queen panel headboard</td><td>$449</td><td>$70</td><td>Headboard only, no rails. Sold to a buyer who had a frame.</td></tr>
-        </tbody>
+        <tbody id="closedBody"></tbody>
       </table>
+      <p class="lots__empty" id="closedEmpty" hidden>Nothing has hammered yet. Results print here as lots close.</p>
     </div>
   </section>
 </main>

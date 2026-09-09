@@ -365,7 +365,7 @@
       'lot_no', 'status', 'category', 'title', 'alt_text', 'image_path', 'grade',
       'pallet', 'found', 'fixed', 'still', 'retail_cents', 'opening_cents',
       'buy_now_cents', 'opens_at', 'ends_at', 'extension_count',
-      'current_price_cents', 'bid_count'
+      'current_price_cents', 'bid_count', 'sold'
     ].join(',');
 
     function fetchLots() {

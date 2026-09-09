@@ -46,6 +46,8 @@ for (const f of ['./00_auth_shim.sql',
                  '../supabase/migrations/0003_auth_bridge.sql',
                  '../supabase/migrations/0004_hardening.sql',
                  '../supabase/migrations/0005_lot_import.sql',
+                 '../supabase/migrations/0006_staff_view.sql',
+                 '../supabase/migrations/0007_rules_hardening.sql',
                  '../supabase/seed.sql']) {
   try {
     await db.query(read(f));
@@ -65,6 +67,8 @@ db.removeAllListeners('notice');
 attach(db);
 try {
   await db.query(strip(read('./01_engine_test.sql')));
+  console.log('\n== the rules 0007 added ==');
+  await db.query(strip(read('./04_rules_test.sql')));
 } catch (e) {
   console.log(`  ERROR: ${e.message}`);
   fail++;

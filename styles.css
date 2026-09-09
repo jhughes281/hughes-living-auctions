@@ -238,6 +238,13 @@ button{ font:inherit; color:inherit; }
   font-family:var(--f-data); font-size:.63rem; letter-spacing:.11em; text-transform:uppercase; color:var(--flag-txt);
 }
 .live::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--flag); }
+.live--soon{ color:var(--ink-2); }  .live--soon::before{ background:var(--ink-3); }
+.live--done{ color:var(--ink-3); }  .live--done::before{ background:var(--line); }
+/* between sales: the hero card carries the schedule instead of a dead lot */
+.tag--quiet{ min-height:18rem; display:flex; flex-direction:column; justify-content:center; }
+.tag--quiet .tag__body{ padding-block:2.5rem; }
+.tag--quiet .tag__retail{ max-width:34ch; margin-top:1rem; line-height:1.55; }
+.tag--quiet .tag__retail a{ color:var(--accent); }
 
 /* ---------- sections ---------- */
 .band{ padding-block:var(--sect); }

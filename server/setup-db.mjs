@@ -32,6 +32,8 @@ const steps = [
   ['0003_auth_bridge.sql',    join(SITE, 'supabase/migrations/0003_auth_bridge.sql')],
   ['0004_hardening.sql',      join(SITE, 'supabase/migrations/0004_hardening.sql')],
   ['0005_lot_import.sql',     join(SITE, 'supabase/migrations/0005_lot_import.sql')],
+  ['0006_staff_view.sql',     join(SITE, 'supabase/migrations/0006_staff_view.sql')],
+  ['0007_rules_hardening.sql',join(SITE, 'supabase/migrations/0007_rules_hardening.sql')],
   ['local_2_realtime.sql',                    join(HERE, 'local_2_realtime.sql')],
   ['seed.sql',                             join(SITE, 'supabase/seed.sql')],
 ];

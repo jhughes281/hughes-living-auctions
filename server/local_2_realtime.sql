@@ -17,7 +17,8 @@ begin
     'bid_count',           new.bid_count,
     'ends_at',             new.ends_at,
     'extension_count',     new.extension_count,
-    'buy_now_cents',       new.buy_now_cents
+    'buy_now_cents',       new.buy_now_cents,
+    'sold',                new.sold
   )::text);
   return new;
 end $$;

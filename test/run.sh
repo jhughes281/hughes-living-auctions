@@ -9,11 +9,10 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 dropdb   -h "$HOST" -p "$PORT" -U postgres --if-exists "$DB"
 createdb -h "$HOST" -p "$PORT" -U postgres "$DB"
 $PSQL -d "$DB" -f "$HERE/00_auth_shim.sql"
-$PSQL -d "$DB" -f "$HERE/../supabase/migrations/0001_auction_core.sql"
-$PSQL -d "$DB" -f "$HERE/../supabase/migrations/0002_realtime_and_close.sql"
+for m in "$HERE"/../supabase/migrations/0*.sql; do $PSQL -d "$DB" -f "$m"; done
 $PSQL -d "$DB" -f "$HERE/../supabase/seed.sql"
 psql -h "$HOST" -p "$PORT" -U postgres -d "$DB" -v ON_ERROR_STOP=1 \
-     -f "$HERE/01_engine_test.sql" 2>&1 \
+     -f "$HERE/01_engine_test.sql" -f "$HERE/04_rules_test.sql" 2>&1 \
   | grep -E '(^==|NOTICE|ERROR|FAIL)' \
   | sed -E 's/^psql:[^:]*:[0-9]+: //; s/^NOTICE:  //'
 

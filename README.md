@@ -117,7 +117,9 @@ what makes the rest of the listing believable.
 
 ## Files
 
-- `index.html` — page, hero lot (118) is in the markup; the rest render from JS
+- `index.html` — page shell. The hero lot, the open-lot grid, the counts and the
+  "what closed" table all render from the engine's data, so the page cannot claim
+  a lot is open when it is not. With nothing open the hero says when the next sale is.
 - `styles.css` — tokens at the top, lifted from the live hugheslivingco.com Shopify theme
   so the two sites read as one company:
 
