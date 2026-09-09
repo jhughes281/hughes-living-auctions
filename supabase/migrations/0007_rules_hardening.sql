@@ -31,14 +31,25 @@ revoke execute on function dollars(integer) from public;
 -- Whether a closed lot actually has a buyer. bid_count > 0 used to imply it;
 -- with reserves enforced it no longer does, and the page needs a public
 -- column it can read to tell "hammered" from "closed, reserve not met".
--- Generated from high_bidder so it can never disagree with the office view,
--- and it leaks nothing high_bidder's absence did not already say.
-alter table lots
-  add column if not exists sold boolean
-  generated always as (high_bidder is not null) stored;
+-- Written only by close_due_lots() and buy_now(), alongside high_bidder, so it
+-- cannot disagree with the office view; and it leaks nothing high_bidder's
+-- absence did not already say. (A generated column would be tidier, but
+-- Postgres refuses generated columns in a publication column list, and the
+-- realtime payload needs it.)
+do $$
+begin
+  -- an earlier draft of this migration made it a generated column
+  if exists (select 1 from information_schema.columns
+              where table_schema = 'public' and table_name = 'lots'
+                and column_name = 'sold' and is_generated = 'ALWAYS') then
+    alter table lots drop column sold;
+  end if;
+end $$;
+alter table lots add column if not exists sold boolean not null default false;
+update lots set sold = (high_bidder is not null) where status <> 'open' and sold is distinct from (high_bidder is not null);
 
 comment on column lots.sold is
-  'True when the lot has a buyer. Generated from high_bidder, which is withheld from the browser; this column is not.';
+  'True when the lot has a buyer. Set at close with high_bidder, which is withheld from the browser; this column is not.';
 
 grant select (sold) on lots to anon, authenticated;
 
@@ -296,7 +307,7 @@ begin
 
   update lots
      set status = 'closed', current_price_cents = v_price, high_bidder = v_bidder,
-         bid_count = bid_count + 1, buy_now_cents = null, ends_at = v_now
+         sold = true, bid_count = bid_count + 1, buy_now_cents = null, ends_at = v_now
    where id = v_lot.id;
 
   insert into lot_events (lot_id, kind, actor, detail)
@@ -333,7 +344,8 @@ begin
 
     update lots
        set status      = 'closed',
-           high_bidder = case when v_met then high_bidder else null end
+           high_bidder = case when v_met then high_bidder else null end,
+           sold        = v_met and v_lot.high_bidder is not null
      where id = v_lot.id;
 
     insert into lot_events (lot_id, kind, actor, detail)

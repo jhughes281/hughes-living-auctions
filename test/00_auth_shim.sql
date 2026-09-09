@@ -39,3 +39,14 @@ do $$ begin
   if not exists (select 1 from pg_roles where rolname='authenticated') then create role authenticated; end if;
 end $$;
 
+
+-- ---------------------------------------------------------------- realtime publication
+-- Supabase has a publication by this name; 0002 and 0007 alter its column
+-- list. Create an empty one so those statements actually run here — a rule
+-- like "no generated columns in a publication column list" is only caught if
+-- the publication exists.
+do $$ begin
+  if not exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+    create publication supabase_realtime;
+  end if;
+end $$;
