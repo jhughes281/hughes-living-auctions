@@ -161,7 +161,8 @@
       '<div class="tag__body">' +
         '<p class="tag__cat">Between sales</p>' +
         '<h2 class="tag__title">Nothing is open right now.</h2>' +
-        '<p class="tag__retail">' + when + ' Results from the last sale are <a href="#closed">below</a>.</p>' +
+        '<p class="tag__retail">' + when +
+          (LOTS.some(hasHammer) ? ' Results from the last sale are <a href="#closed">below</a>.' : '') + '</p>' +
       '</div>' +
     '</article>';
   }
