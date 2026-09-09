@@ -368,13 +368,25 @@
       'current_price_cents', 'bid_count', 'sold'
     ].join(',');
 
+    /* If the database is a migration behind the page (a column the page asks
+       for does not exist yet), ask again without that column rather than show
+       an empty sale. The page already treats a missing `sold` as unknown. */
+    var cols = PUBLIC_COLS;
     function fetchLots() {
       return client().then(function (c) {
-        return c.from('lots').select(PUBLIC_COLS)
+        return c.from('lots').select(cols)
                 .in('status', ['open', 'closed', 'settled'])
                 .order('ends_at', { ascending: true });
       }).then(function (r) {
-        if (r.error) throw AuctionError(r.error.message);
+        if (r.error) {
+          var m = /column lots\.(\w+) does not exist/i.exec(r.error.message || '');
+          if (m && cols.split(',').indexOf(m[1]) !== -1) {
+            console.warn('lots.' + m[1] + ' is not in the database yet; run the latest migration');
+            cols = cols.split(',').filter(function (k) { return k !== m[1]; }).join(',');
+            return fetchLots();
+          }
+          throw AuctionError(r.error.message);
+        }
         return r.data;
       });
     }

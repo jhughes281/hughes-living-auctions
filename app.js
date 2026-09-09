@@ -627,6 +627,10 @@
       grid.innerHTML = '';
       empty.hidden = false;
       empty.textContent = 'The lot list could not be loaded. ' + (err.message || '');
+      feature.innerHTML = '<article class="tag tag--feature tag--quiet"><span class="tag__punch" aria-hidden="true"></span>' +
+        '<div class="tag__body"><p class="tag__cat">Could not reach the sale</p>' +
+        '<h2 class="tag__title">The lots did not load.</h2>' +
+        '<p class="tag__retail">' + esc(err.message || 'Try again in a moment.') + '</p></div></article>';
     });
 
   /* ---------- mobile nav ---------- */
