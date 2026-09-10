@@ -315,7 +315,7 @@
 
   /* ============================================================ supabase */
   function SupabaseBackend() {
-    var sb = null, offset = 0, positions = {}, listeners = [], channel = null;
+    var sb = null, sbLoading = null, offset = 0, positions = {}, listeners = [], channel = null;
 
     /* supabase-js is vendored at vendor/supabase-js-2.112.4.js and loaded from
        our own origin, not a CDN. This library handles the session token; if it
@@ -349,18 +349,30 @@
       return libLoading;
     }
 
+    /* Cache the in-flight promise, not just the settled client.
+       sb is assigned only after loadLib() resolves, so without this every
+       caller during that window falls through and builds its own client. At
+       boot there are always several — init(), refresh(), onPasswordRecovery()
+       — and the result was two GoTrueClients sharing one storage key, both
+       refreshing the same token. Supabase warns that is undefined behaviour,
+       and it is a plausible source of sign-in flakiness. */
     function client() {
       if (sb) return Promise.resolve(sb);
+      if (sbLoading) return sbLoading;
       if (!CFG.supabaseUrl || !CFG.supabaseAnonKey) {
         return Promise.reject(AuctionError(
           'No Supabase project configured. Set supabaseUrl and supabaseAnonKey in config.js.'));
       }
-      return loadLib().then(function () {
+      sbLoading = loadLib().then(function () {
         sb = global.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, {
           auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
         });
         return sb;
+      }).catch(function (err) {
+        sbLoading = null;          /* let a later attempt retry rather than stick */
+        throw err;
       });
+      return sbLoading;
     }
 
     var PUBLIC_COLS = [
