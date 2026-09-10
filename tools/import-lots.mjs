@@ -13,6 +13,11 @@
 // Credentials come from the environment, never from a file in this repo:
 //   local     PGHOST/PGPORT/PGUSER/PGPASSWORD/PGDATABASE (defaults to dev)
 //   supabase  DATABASE_URL=postgres://...  (the pooled connection string)
+//   photos    SUPABASE_URL + SUPABASE_SERVICE_KEY, with --storage
+//
+// Git is not an image host. Three photographs a lot at a pallet a week is
+// roughly half a gigabyte a year, and git never forgets — deleting a photo
+// does not shrink the repository, because every version stays in history.
 //
 // This is an operator tool. It connects to Postgres directly and does NOT go
 // through the browser API, so `lots` stays unwritable by any client — which is
@@ -44,6 +49,10 @@ const CLOSE_AT = flag('close');
 const STAGGER  = Number(flag('stagger', 4));
 const PALLET   = flag('pallet');
 const PREFIX   = flag('image-prefix', 'img/');
+const STORAGE  = has('storage');
+const BUCKET   = flag('bucket', 'lots');
+const SB_URL   = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
+const SB_KEY   = process.env.SUPABASE_SERVICE_KEY || '';
 
 if (!csvPath || !existsSync(csvPath)) {
   console.error(`usage: node tools/import-lots.mjs <file.csv> [options]
@@ -54,6 +63,10 @@ if (!csvPath || !existsSync(csvPath)) {
   --stagger <minutes>   gap between closings      (default: 4)
   --pallet <id>         pallet number, if the CSV has no pallet column
   --image-prefix <p>    stored path prefix        (default: img/)
+  --storage             upload photos to Supabase Storage instead of copying
+                        them into img/. Needs SUPABASE_URL and
+                        SUPABASE_SERVICE_KEY in the environment.
+  --bucket <name>       storage bucket (default: lots)
   --commit              actually write. Without it, nothing is changed.
 
 Columns: category, title, grade, found, fixed, still
@@ -65,6 +78,49 @@ Optional: ref, pallet, retail, buy_now, reserve, alt, opening
           image_repair                  what the bench did
           image_detail                  joinery, label, hardware`);
   process.exit(1);
+}
+
+// ---------------------------------------------------------------- storage
+if (STORAGE && (!SB_URL || !SB_KEY)) {
+  console.error(`--storage needs both SUPABASE_URL and SUPABASE_SERVICE_KEY in the environment.
+
+  SUPABASE_URL         Settings -> API -> Project URL
+  SUPABASE_SERVICE_KEY Settings -> API Keys -> a SECRET key
+
+The secret key bypasses row level security. Set it in your shell for this run;
+never put it in a file in this repo.`);
+  process.exit(1);
+}
+
+const MIME = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png',
+               '.webp': 'image/webp', '.avif': 'image/avif' };
+
+// Path inside the bucket. Grouped by pallet because that is how the stock
+// physically arrives and how you would go looking for it later.
+function storageKey(pallet, name) {
+  return `${(pallet || 'nopallet').replace(/[^\w-]/g, '')}/${name}`;
+}
+function publicUrl(key) {
+  return `${SB_URL}/storage/v1/object/public/${BUCKET}/${key}`;
+}
+
+async function upload(localPath, key) {
+  const type = MIME[extname(localPath).toLowerCase()] || 'application/octet-stream';
+  const body = readFileSync(localPath);
+  const res = await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${key}`, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${SB_KEY}`,
+      'content-type': type,
+      'x-upsert': 'true'          // re-importing a pallet replaces, not duplicates
+    },
+    body
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`upload of ${key} failed: HTTP ${res.status} ${text.slice(0, 160)}`);
+  }
+  return publicUrl(key);
 }
 
 // ---------------------------------------------------------------- csv
@@ -295,6 +351,7 @@ if (lots[0].endsAt <= opensAt) {
 const fmt = d => d.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric',
                                              hour: 'numeric', minute: '2-digit' });
 console.log(`\n${basename(csvPath)} — ${lots.length} lots, all valid`);
+console.log(`  photos  ${STORAGE ? 'upload to ' + BUCKET + ' on ' + SB_URL : 'copy into ' + PREFIX}`);
 console.log(`  opens   ${fmt(opensAt)}`);
 console.log(`  closes  ${fmt(lots[0].endsAt)} to ${fmt(lots[lots.length - 1].endsAt)}, ${STAGGER} min apart\n`);
 const w = Math.min(46, Math.max(...lots.map(l => l.title.length)));
@@ -326,12 +383,24 @@ let created = 0, updated = 0;
 try {
   await db.query('begin');
   for (const l of lots) {
-    // Copy every photograph in before the rows reference them.
-    const destDir = join(SITE, PREFIX);
-    for (const sh of l.shots) {
-      if (!sh.source) continue;
-      mkdirSync(destDir, { recursive: true });
-      copyFileSync(sh.source, join(destDir, sh.name));
+    // Put every photograph where the site will read it from, before the rows
+    // reference it. Storage gets a URL; the repo gets a relative path.
+    if (STORAGE) {
+      for (const sh of l.shots) {
+        // Nothing local to send — the file is already in img/. Leave its path
+        // alone rather than inventing a storage URL for something never sent.
+        if (!sh.source) continue;
+        sh.path = await upload(sh.source, storageKey(l.pallet, sh.name));
+      }
+      const piece = l.shots.find(x => x.kind === 'piece');
+      if (piece) l.imagePath = piece.path;
+    } else {
+      const destDir = join(SITE, PREFIX);
+      for (const sh of l.shots) {
+        if (!sh.source) continue;
+        mkdirSync(destDir, { recursive: true });
+        copyFileSync(sh.source, join(destDir, sh.name));
+      }
     }
 
     const { rows } = await db.query(`
