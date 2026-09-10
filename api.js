@@ -131,6 +131,7 @@
         return Promise.reject(AuctionError('There are no passwords in the demonstration build.'));
       },
       onPasswordRecovery: function () {},
+      isStaff: function () { return Promise.resolve(false); },
 
       placeBid: function (lotNo, maxCents, protection) {
         var lot = lots.filter(function (l) { return l.lot_no === lotNo; })[0];
@@ -263,6 +264,7 @@
         return Promise.reject(AuctionError('The dev server has no passwords.'));
       },
       onPasswordRecovery: function () {},
+      isStaff: function () { return Promise.resolve(false); },
 
       signIn: function (email /*, password: dev server is passwordless */) {
         return req('/api/signin', { method: 'POST', body: { email: email } })
@@ -590,6 +592,15 @@
             if (event === 'PASSWORD_RECOVERY') fn();
           });
         }).catch(function () {});
+      },
+
+      /* Cheap yes/no so the interface can hide office links from bidders.
+         Not a security boundary — staff_lots() re-checks in the database and
+         raises. This only stops a bidder being shown a door that refuses them. */
+      isStaff: function () {
+        return client().then(function (c) { return c.rpc('is_staff'); })
+          .then(function (r) { return !r.error && r.data === true; })
+          .catch(function () { return false; });
       },
 
       /* Office view. The RPCs check is_staff server-side and raise otherwise,

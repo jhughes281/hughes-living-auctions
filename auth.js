@@ -271,9 +271,21 @@
       byLot = {};
       session.positions.forEach(function (p) { byLot[p.lot_no] = p; });
       paintPaddles();
+      paintStaff();
       listeners.forEach(function (fn) { fn(session); });
       return session;
     }).catch(function () { return session; });
+  }
+
+  /* Reveal anything marked staff-only, once the server confirms it. */
+  function paintStaff() {
+    var show = false;
+    var apply = function () {
+      var els = document.querySelectorAll('[data-staff-only]');
+      for (var i = 0; i < els.length; i++) els[i].hidden = !show;
+    };
+    if (!session.signedIn || !API.isStaff) { apply(); return; }
+    API.isStaff().then(function (yes) { show = yes; apply(); });
   }
 
   function paintPaddles() {
