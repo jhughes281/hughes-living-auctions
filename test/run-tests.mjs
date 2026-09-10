@@ -48,6 +48,7 @@ for (const f of ['./00_auth_shim.sql',
                  '../supabase/migrations/0005_lot_import.sql',
                  '../supabase/migrations/0006_staff_view.sql',
                  '../supabase/migrations/0007_rules_hardening.sql',
+                 '../supabase/migrations/0008_lot_detail.sql',
                  '../supabase/seed.sql']) {
   try {
     await db.query(read(f));
@@ -69,6 +70,8 @@ try {
   await db.query(strip(read('./01_engine_test.sql')));
   console.log('\n== the rules 0007 added ==');
   await db.query(strip(read('./04_rules_test.sql')));
+  console.log('\n== lot detail: galleries, dimensions, attributes, watchlist ==');
+  await db.query(strip(read('./05_detail_test.sql')));
 } catch (e) {
   console.log(`  ERROR: ${e.message}`);
   fail++;
