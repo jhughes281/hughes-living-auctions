@@ -57,7 +57,13 @@ if (!csvPath || !existsSync(csvPath)) {
   --commit              actually write. Without it, nothing is changed.
 
 Columns: category, title, grade, found, fixed, still
-Optional: ref, pallet, retail, buy_now, reserve, image, alt, opening`);
+Optional: ref, pallet, retail, buy_now, reserve, alt, opening
+          width, depth, height          whole inches
+          room, style, brand, material  what buyers filter by
+          image                         the piece
+          image_flaw                    what the Still line describes
+          image_repair                  what the bench did
+          image_detail                  joinery, label, hardware`);
   process.exit(1);
 }
 
@@ -119,6 +125,7 @@ const money = c => '$' + (c / 100).toLocaleString('en-US');
 
 // ---------------------------------------------------------------- validate
 const problems = [];
+const warnings = [];
 const seenRef = new Map();
 const seenTitle = new Map();
 
@@ -166,23 +173,75 @@ const lots = records.map(r => {
     problems.push({ line, msg: `buy_now ${money(buyNow)} is above retail ${money(retail)} — nobody buys that` });
   }
 
-  // Images
-  let imagePath = null, imageSource = null;
-  const imageName = (r.image || '').trim();
-  if (imageName) {
-    if (IMAGES && IMAGES !== true) {
-      const src = join(resolve(String(IMAGES)), imageName);
-      if (!existsSync(src)) problems.push({ line, msg: `image "${imageName}" not found in ${IMAGES}` });
-      else imageSource = src;
-    } else if (!existsSync(join(SITE, PREFIX, imageName))) {
-      problems.push({ line, msg: `image "${imageName}" not in ${PREFIX} and no --images folder given` });
+  // Dimensions, in whole inches. The bounds catch the two usual mistakes:
+  // entering millimetres, and entering a decimal that rounds to nothing.
+  const inches = (k, label) => {
+    const v = (r[k] || '').trim();
+    if (!v) return null;
+    const n = Number(v.replace(/["'\s]|in\.?$/gi, ''));
+    if (!isFinite(n)) { problems.push({ line, msg: `${label} "${v}" is not a number` }); return null; }
+    // A spreadsheet gets 0 typed into it for "not applicable" — a lamp has no
+    // meaningful depth. Treat that as unmeasured rather than as an error.
+    if (n === 0) return null;
+    if (n < 0)   { problems.push({ line, msg: `${label} ${v} is negative` }); return null; }
+    if (n >= 400) {
+      problems.push({ line, msg: `${label} ${v} is over 400in — millimetres by mistake?` });
+      return null;
     }
-    imagePath = PREFIX + imageName;
-  } else {
+    if (n !== Math.round(n)) problems.push({ line, msg: `${label} ${v} is not a whole inch` });
+    return Math.round(n);
+  };
+  const widthIn  = inches('width',  'width');
+  const depthIn  = inches('depth',  'depth');
+  const heightIn = inches('height', 'height');
+
+  // Attributes. Lowercased so "Living" and "living" are one facet; brand keeps
+  // its capitals because it is a name.
+  const lower = k => { const v = (r[k] || '').trim(); return v ? v.toLowerCase() : null; };
+  const room     = lower('room');
+  const style    = lower('style');
+  const material = lower('material');
+  const brand    = (r.brand || '').trim() || null;
+
+  // Photographs. One column per role, mirroring the ledger: the Found/Still
+  // line describes the flaw, image_flaw shows it; the Fixed line describes the
+  // repair, image_repair shows it.
+  const shots = [];
+  const shot = (col, kind, altText) => {
+    const name = (r[col] || '').trim();
+    if (!name) return;
+    let source = null;
+    if (IMAGES && IMAGES !== true) {
+      const src = join(resolve(String(IMAGES)), name);
+      if (!existsSync(src)) { problems.push({ line, msg: `${col} "${name}" not found in ${IMAGES}` }); return; }
+      source = src;
+    } else if (!existsSync(join(SITE, PREFIX, name))) {
+      problems.push({ line, msg: `${col} "${name}" not in ${PREFIX} and no --images folder given` });
+      return;
+    }
+    shots.push({ name, kind, source, path: PREFIX + name, alt: altText, position: shots.length });
+  };
+
+  const alt = (r.alt || '').trim() || `${title}.`;
+  shot('image',        'piece',  alt);
+  shot('image_flaw',   'flaw',   `The flaw described on the tag: ${still || 'see listing'}`);
+  shot('image_repair', 'repair', `The repair described on the tag: ${fixed || 'see listing'}`);
+  shot('image_detail', 'detail', `${title}, detail.`);
+
+  const imageName   = (r.image || '').trim();
+  const imagePath   = imageName ? PREFIX + imageName : null;
+  const imageSource = (shots.find(x => x.kind === 'piece') || {}).source || null;
+
+  if (!imageName) {
     problems.push({ line, msg: 'no image — a damaged-goods lot without a photo will not sell' });
   }
 
-  const alt = (r.alt || '').trim() || `${title}.`;
+  // Not an error: sometimes the flaw is an absence you cannot photograph
+  // ("still no side rails"). But a graded-down lot whose flaw is only ever
+  // described is the weakest listing on the site, so it is called out.
+  if (['b', 'c', 'd'].includes(grade) && !shots.some(x => x.kind === 'flaw')) {
+    warnings.push({ line, msg: `grade ${grade.toUpperCase()} with no image_flaw — the Still line is a claim without a picture` });
+  }
 
   // Stable key for re-import
   const ref = (r.ref || '').trim() ||
@@ -197,8 +256,17 @@ const lots = records.map(r => {
   } else seenTitle.set(tkey, line);
 
   return { line, ref, category, title, alt, grade, pallet, found, fixed, still,
-           retail, buyNow, reserve, opening, imagePath, imageSource, imageName };
+           retail, buyNow, reserve, opening, imagePath, imageSource, imageName,
+           widthIn, depthIn, heightIn, room, style, brand, material, shots };
 });
+
+if (warnings.length) {
+  console.error(`
+${warnings.length} thing${warnings.length === 1 ? '' : 's'} worth a look — not blocking:
+`);
+  warnings.sort((a, b) => a.line - b.line)
+          .forEach(w => console.error(`  line ${String(w.line).padStart(3)}   ${w.msg}`));
+}
 
 if (problems.length) {
   console.error(`\n${problems.length} problem${problems.length === 1 ? '' : 's'} in ${basename(csvPath)}. Nothing was written.\n`);
@@ -258,37 +326,56 @@ let created = 0, updated = 0;
 try {
   await db.query('begin');
   for (const l of lots) {
-    // Copy the photo in before the row references it.
-    if (l.imageSource) {
-      const destDir = join(SITE, PREFIX);
+    // Copy every photograph in before the rows reference them.
+    const destDir = join(SITE, PREFIX);
+    for (const sh of l.shots) {
+      if (!sh.source) continue;
       mkdirSync(destDir, { recursive: true });
-      copyFileSync(l.imageSource, join(destDir, l.imageName));
+      copyFileSync(sh.source, join(destDir, sh.name));
     }
 
     const { rows } = await db.query(`
       insert into lots (import_key, category, title, alt_text, image_path, grade, pallet,
                         found, fixed, still, retail_cents, buy_now_cents, reserve_cents,
-                        opening_cents, status, opens_at, ends_at, original_ends_at)
-      values ($1,$2,$3,$4,$5,$6::lot_grade,$7,$8,$9,$10,$11,$12,$13,$14,'open',$15,$16,$16)
+                        opening_cents, status, opens_at, ends_at, original_ends_at,
+                        width_in, depth_in, height_in, room, style, brand, material)
+      values ($1,$2,$3,$4,$5,$6::lot_grade,$7,$8,$9,$10,$11,$12,$13,$14,'open',$15,$16,$16,
+              $17,$18,$19,$20,$21,$22,$23)
       on conflict (import_key) where import_key is not null do update set
         category = excluded.category, title = excluded.title, alt_text = excluded.alt_text,
         image_path = excluded.image_path, grade = excluded.grade, pallet = excluded.pallet,
         found = excluded.found, fixed = excluded.fixed, still = excluded.still,
-        retail_cents = excluded.retail_cents, reserve_cents = excluded.reserve_cents
+        retail_cents = excluded.retail_cents, reserve_cents = excluded.reserve_cents,
+        width_in = excluded.width_in, depth_in = excluded.depth_in,
+        height_in = excluded.height_in, room = excluded.room, style = excluded.style,
+        brand = excluded.brand, material = excluded.material
         -- Deliberately NOT updated on re-import: buy_now_cents, opening_cents, ends_at,
         -- status. Those change the deal under people who have already bid.
       where lots.bid_count = 0
-      returning lot_no, (xmax = 0) as inserted`,
+      returning id, lot_no, (xmax = 0) as inserted`,
       [l.ref, l.category, l.title, l.alt, l.imagePath, l.grade, l.pallet,
        l.found, l.fixed, l.still, l.retail, l.buyNow, l.reserve, l.opening,
-       opensAt.toISOString(), l.endsAt.toISOString()]);
+       opensAt.toISOString(), l.endsAt.toISOString(),
+       l.widthIn, l.depthIn, l.heightIn, l.room, l.style, l.brand, l.material]);
 
     if (!rows.length) {
       console.log(`  skipped  ${l.title} — already has bids, not touching it`);
       continue;
     }
+    // The trigger in 0008 already filed the piece shot from image_path; this
+    // adds the rest and keeps them in the order the spreadsheet listed them.
+    for (const sh of l.shots) {
+      await db.query(`
+        insert into lot_images (lot_id, path, alt, kind, position)
+        values ($1,$2,$3,$4,$5)
+        on conflict (lot_id, path) do update set
+          alt = excluded.alt, kind = excluded.kind, position = excluded.position`,
+        [rows[0].id, sh.path, sh.alt, sh.kind, sh.position]);
+    }
+
     rows[0].inserted ? created++ : updated++;
-    console.log(`  ${rows[0].inserted ? 'listed ' : 'updated'}  lot ${rows[0].lot_no}  ${l.title}`);
+    const extra = l.shots.length > 1 ? `  (${l.shots.length} photos)` : '';
+    console.log(`  ${rows[0].inserted ? 'listed ' : 'updated'}  lot ${rows[0].lot_no}  ${l.title}${extra}`);
   }
   await db.query('commit');
   console.log(`\n${created} listed, ${updated} updated.\n`);
