@@ -132,6 +132,7 @@
       },
       onPasswordRecovery: function () {},
       isStaff: function () { return Promise.resolve(false); },
+      lotImages: function () { return Promise.resolve([]); },
 
       placeBid: function (lotNo, maxCents, protection) {
         var lot = lots.filter(function (l) { return l.lot_no === lotNo; })[0];
@@ -265,6 +266,7 @@
       },
       onPasswordRecovery: function () {},
       isStaff: function () { return Promise.resolve(false); },
+      lotImages: function () { return Promise.resolve([]); },
 
       signIn: function (email /*, password: dev server is passwordless */) {
         return req('/api/signin', { method: 'POST', body: { email: email } })
@@ -379,7 +381,8 @@
       'lot_no', 'status', 'category', 'title', 'alt_text', 'image_path', 'grade',
       'pallet', 'found', 'fixed', 'still', 'retail_cents', 'opening_cents',
       'buy_now_cents', 'opens_at', 'ends_at', 'extension_count',
-      'current_price_cents', 'bid_count', 'sold'
+      'current_price_cents', 'bid_count', 'sold',
+      'width_in', 'depth_in', 'height_in', 'room', 'style', 'brand', 'material'
     ].join(',');
 
     /* If the database is a migration behind the page (a column the page asks
@@ -604,6 +607,26 @@
             if (event === 'PASSWORD_RECOVERY') fn();
           });
         }).catch(function () {});
+      },
+
+      /* The gallery for one lot. Keyed by lot_no because the internal id is
+         not on the wire — anon can read lot_images, but has no way to learn
+         which lot_id belongs to which lot without this join. */
+      lotImages: function (lotNo) {
+        return client().then(function (c) {
+          return c.from('lot_images')
+                  .select('path, alt, kind, position, lots!inner(lot_no)')
+                  .eq('lots.lot_no', lotNo)
+                  .order('position', { ascending: true });
+        }).then(function (r) {
+          if (r.error) {
+            /* Same tolerance as the column list: a page newer than the
+               database should degrade to the single photo, not break. */
+            console.warn('lot_images unavailable (' + r.error.message + '); falling back to the card photo');
+            return [];
+          }
+          return r.data || [];
+        });
       },
 
       /* Cheap yes/no so the interface can hide office links from bidders.

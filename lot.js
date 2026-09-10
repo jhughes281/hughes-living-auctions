@@ -10,6 +10,8 @@
   var host = document.getElementById('lotHost');
   var lotNo = Number(new URLSearchParams(location.search).get('lot'));
   var lot = null;
+  var shots = [];
+  var showing = 0;
 
   function money(c) { return '$' + Math.round(c / 100).toLocaleString('en-US'); }
   function money2(c) { return '$' + (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -32,6 +34,13 @@
       : l.current_price_cents + API.incrementCents(l.current_price_cents);
   }
 
+  var SHOT_LABEL = {
+    piece:  'The piece',
+    flaw:   'The flaw',
+    repair: 'The repair',
+    detail: 'Detail'
+  };
+
   var GRADE = {
     a: 'Functionally new. Nothing wrong we could find.',
     b: 'Repaired, and the repair leaves a trace you could point at.',
@@ -39,20 +48,53 @@
     d: 'Parts or project. Sold as it sits, with no bench protection.'
   };
 
+  /* The most common question about a piece of furniture, answered before it is
+     asked. Any axis may be missing — a lamp has no meaningful depth. */
+  function dimensionLine(l) {
+    var parts = [];
+    if (l.width_in)  parts.push(l.width_in  + '"W');
+    if (l.depth_in)  parts.push(l.depth_in  + '"D');
+    if (l.height_in) parts.push(l.height_in + '"H');
+    var facets = [l.room, l.style, l.material].filter(Boolean);
+    if (!parts.length && !facets.length && !l.brand) return '';
+    return '<p class="lot__spec">' +
+      (parts.length ? '<span class="lot__dims">' + parts.join(' &times; ') + '</span>' : '') +
+      (l.brand ? '<span class="lot__facet">' + esc(l.brand) + '</span>' : '') +
+      facets.map(function (f) { return '<span class="lot__facet">' + esc(f) + '</span>'; }).join('') +
+      '</p>';
+  }
+
   function render() {
     if (!lot) return;
     var closed = lot.status !== 'open';
     var mine = AUTH.isLeading(lot.lot_no);
     var myMax = AUTH.myMax(lot.lot_no);
 
+    var hasFlaw = shots.some(function (x) { return x.kind === 'flaw'; });
+    var cur = shots[showing] || { path: lot.image_path, alt: lot.alt_text, kind: 'piece' };
+
     host.innerHTML = '' +
     '<article class="lot' + (mine ? ' is-mine' : '') + '">' +
       '<div class="lot__media">' +
-        '<img src="' + esc(lot.image_path) + '" alt="' + esc(lot.alt_text) + '" width="1000" height="750">' +
+        '<img id="lotShot" src="' + esc(cur.path) + '" alt="' + esc(cur.alt) + '" width="1000" height="750">' +
         '<span class="grade grade--' + esc(lot.grade) + '">Grade ' + esc(lot.grade).toUpperCase() + '</span>' +
-        /* The honest bit: say out loud that the flaw is not pictured yet. */
-        '<p class="lot__shotnote">One photograph so far. The flaw described below is not ' +
-          'pictured — ask before you bid if it matters to you.</p>' +
+        (shots.length > 1
+          ? '<ul class="shots" role="list">' + shots.map(function (sh, i) {
+              return '<li><button type="button" class="shot' + (i === showing ? ' is-on' : '') +
+                     '" data-shot="' + i + '" aria-current="' + (i === showing ? 'true' : 'false') + '">' +
+                     '<img src="' + esc(sh.path) + '" alt="" width="120" height="90">' +
+                     '<span>' + SHOT_LABEL[sh.kind] + '</span></button></li>';
+            }).join('') + '</ul>'
+          : '') +
+        /* The caption ties the picture to the sentence it is evidence for. */
+        (cur.kind === 'flaw'
+          ? '<p class="lot__shotnote is-flaw"><b>This is the flaw.</b> ' + esc(lot.still) + '</p>'
+          : cur.kind === 'repair'
+          ? '<p class="lot__shotnote is-repair"><b>This is the repair.</b> ' + esc(lot.fixed) + '</p>'
+          : hasFlaw
+          ? ''
+          : '<p class="lot__shotnote">One photograph so far. The flaw described below is not ' +
+            'pictured — ask before you bid if it matters to you.</p>') +
       '</div>' +
 
       '<div class="lot__detail">' +
@@ -61,6 +103,7 @@
           ' &middot; Lot ' + lot.lot_no + '</p>' +
         '<h1 class="lot__title">' + esc(lot.title) + '</h1>' +
         (lot.retail_cents ? '<p class="tag__retail">Retail <s>' + money(lot.retail_cents) + '</s></p>' : '') +
+        dimensionLine(lot) +
 
         '<dl class="ledger">' +
           '<div class="ledger__row"><dt>Found</dt><dd>' + esc(lot.found) + '</dd></div>' +
@@ -115,6 +158,8 @@
 
   /* ---------- bidding ---------- */
   document.addEventListener('click', function (e) {
+    var thumb = e.target.closest('[data-shot]');
+    if (thumb) { showing = Number(thumb.dataset.shot); render(); return; }
     if (e.target.closest('.btn--bid')) { AUTH.require(openBid); return; }
     if (e.target.closest('.btn--buy')) { AUTH.require(doBuy); return; }
   });
@@ -162,7 +207,8 @@
     return API.lots().then(function (rows) {
       lot = rows.filter(function (l) { return l.lot_no === lotNo; })[0] || lot;
       return AUTH.refresh();
-    }).then(render);
+    }).then(render);   /* `showing` is deliberately kept: a bid should not
+                          throw you back to the first photograph. */
   }
 
   /* ---------- boot ---------- */
@@ -184,7 +230,10 @@
         return;
       }
       document.title = 'Lot ' + lot.lot_no + ' — ' + lot.title + ' — Hughes Living Auctions';
-      if (API.canSignIn) return AUTH.refresh();
+      return API.lotImages(lot.lot_no).then(function (rows) {
+        shots = rows.length ? rows : [];
+        if (API.canSignIn) return AUTH.refresh();
+      });
     })
     .then(function () {
       if (!lot) return;
