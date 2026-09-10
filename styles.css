@@ -390,7 +390,8 @@ button{ font:inherit; color:inherit; }
 .foot__grid{ display:grid; gap:2.5rem; }
 @media (min-width:800px){ .foot__grid{ grid-template-columns:1.4fr 1fr 1fr; gap:3rem; } }
 .mark--foot{ display:block; margin-bottom:1.2rem; }
-.foot h4{ font-family:var(--f-data); font-weight:700; font-size:.64rem; letter-spacing:.11em; text-transform:uppercase; color:var(--accent); margin:0 0 1rem; }
+.foot .foot__h{ font-family:var(--f-data); font-weight:700; font-size:.64rem;
+  letter-spacing:.11em; text-transform:uppercase; color:var(--accent); margin:0 0 1rem; }
 .foot ul{ list-style:none; margin:0; padding:0; display:grid; gap:.6rem; font-size:.9rem; }
 .foot a{ text-decoration:none; color:var(--ink-2); }
 .foot a:hover{ color:var(--accent); }
