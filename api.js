@@ -34,6 +34,8 @@
   /* Mirrors sales_tax_bps() and tax_cents() from 0009_sales_tax.sql. Same rule
      as the increments above: the rate changes in SQL first and here second. */
   var TAX_BPS = 825;
+  /* Mirrors settlement_days() in 0010. */
+  var SETTLE_DAYS = 4;
   function taxCents(amount) {
     return Math.floor((amount * TAX_BPS / 10000) + 0.5);
   }
@@ -139,6 +141,8 @@
       onPasswordRecovery: function () {},
       isStaff: function () { return Promise.resolve(false); },
       lotImages: function () { return Promise.resolve([]); },
+      declineLot: function () { return Promise.reject(AuctionError('Not in the demonstration build.')); },
+      settleLot:  function () { return Promise.reject(AuctionError('Not in the demonstration build.')); },
 
       placeBid: function (lotNo, maxCents, protection) {
         var lot = lots.filter(function (l) { return l.lot_no === lotNo; })[0];
@@ -273,6 +277,8 @@
       onPasswordRecovery: function () {},
       isStaff: function () { return Promise.resolve(false); },
       lotImages: function () { return Promise.resolve([]); },
+      declineLot: function () { return Promise.reject(AuctionError('Not in the demonstration build.')); },
+      settleLot:  function () { return Promise.reject(AuctionError('Not in the demonstration build.')); },
 
       signIn: function (email /*, password: dev server is passwordless */) {
         return req('/api/signin', { method: 'POST', body: { email: email } })
@@ -635,6 +641,40 @@
         });
       },
 
+      /* Hand a won lot back. The database checks you are actually the winner
+         and gives the same refusal either way, so this cannot be used to find
+         out who won something. */
+      declineLot: function (lotNo) {
+        return client().then(function (c) { return c.rpc('decline_lot', { p_lot_no: lotNo }); })
+          .then(function (r) {
+            if (r.error) {
+              var m = r.error.message || '';
+              if (/not yours to decline/i.test(m)) {
+                throw AuctionError('That lot is not yours to hand back.');
+              }
+              if (/already settled/i.test(m)) {
+                throw AuctionError('That lot has already been collected.');
+              }
+              throw AuctionError(m);
+            }
+            return r.data;
+          });
+      },
+
+      /* Office: mark a lot collected. Gated on is_staff in the database. */
+      settleLot: function (lotNo) {
+        return client().then(function (c) { return c.rpc('settle_lot', { p_lot_no: lotNo }); })
+          .then(function (r) {
+            if (r.error) {
+              if (/not staff/i.test(r.error.message || '')) {
+                throw AuctionError('This paddle does not have office access.', 'NOTSTAFF');
+              }
+              throw AuctionError(r.error.message);
+            }
+            return r.data;
+          });
+      },
+
       /* Cheap yes/no so the interface can hide office links from bidders.
          Not a security boundary — staff_lots() re-checks in the database and
          raises. This only stops a bidder being shown a door that refuses them. */
@@ -706,5 +746,6 @@
   backend.protectionCents = protectionCents;
   backend.taxCents        = taxCents;
   backend.taxRate         = TAX_BPS / 100;   /* 8.25, for display */
+  backend.settlementDays  = SETTLE_DAYS;
   global.HLA_API = backend;
 })(window);

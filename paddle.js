@@ -25,6 +25,24 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  /* What a winner owes, and by when. The deadline is the lot's own settle_by,
+     not a number this page invents. */
+  function settlementLine(l, owed, won) {
+    if (!won) return '';
+    if (l.settled_at)  return '<span class="pos__settle is-done">Collected</span>';
+    if (l.declined_at) return '<span class="pos__settle is-back">Handed back &mdash; relisting</span>';
+    if (!l.settle_by)  return '';
+    var by = new Date(l.settle_by);
+    var hrs = (by.getTime() - API.serverNow().getTime()) / 3600000;
+    var when = by.toLocaleString('en-US', { weekday: 'long', month: 'short', day: 'numeric',
+                                            hour: 'numeric', minute: '2-digit' });
+    return '<span class="pos__settle' + (hrs < 24 ? ' is-urgent' : '') + '">' +
+             (hrs <= 0 ? 'Past the collection window' : 'Collect by ' + when) +
+           '</span>' +
+           '<button type="button" class="linkbtn pos__decline" data-decline="' + l.lot_no + '">' +
+             'I no longer want this' + '</button>';
+  }
+
   function render() {
     var s = AUTH.session;
 
@@ -83,12 +101,22 @@
           var l = lotsByNo[r.lot_no] || {};
           var ms = new Date(r.ends_at).getTime() - API.serverNow().getTime();
           var done = ms <= 0;
-          return '<tr class="' + (r.is_leading ? 'is-leading' : 'is-outbid') + '">' +
+          var won  = done && r.is_leading && l.sold;
+          /* settle_by, settled_at and declined_at are public columns on the
+             lot; my_positions() says whether the lot is yours. */
+          var owed = won && !l.settled_at && !l.declined_at;
+          return '<tr class="' + (r.is_leading ? 'is-leading' : 'is-outbid') +
+                   (owed ? ' is-owed' : '') + '">' +
             '<td><a href="lot.html?lot=' + r.lot_no + '">' +
               (l.title ? esc(l.title) : 'Lot ' + r.lot_no) + '</a>' +
-              '<span class="pos__no">Lot ' + r.lot_no + '</span></td>' +
+              '<span class="pos__no">Lot ' + r.lot_no + '</span>' +
+              settlementLine(l, owed, won) + '</td>' +
             '<td><span class="pos__flag">' +
-              (done ? (r.is_leading ? 'Won' : 'Lost') : (r.is_leading ? 'Holding' : 'Outbid')) +
+              (l.settled_at ? 'Collected'
+                : l.declined_at ? 'Handed back'
+                : won ? 'Won'
+                : done ? 'Lost'
+                : r.is_leading ? 'Holding' : 'Outbid') +
               '</span></td>' +
             '<td class="pos__num">' + money(r.price_cents) + '</td>' +
             '<td class="pos__num">' + money(r.my_max_cents) + '</td>' +
@@ -104,6 +132,23 @@
       cells[i].textContent = left(new Date(cells[i].dataset.ends).getTime() - API.serverNow().getTime());
     }
   }
+
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-decline]');
+    if (!b) return;
+    var lotNo = Number(b.dataset.decline);
+    if (!confirm('Hand lot ' + lotNo + ' back?\n\nIt goes straight back into the auction and ' +
+                 'you owe nothing. This cannot be undone.')) return;
+    b.disabled = true;
+    API.declineLot(lotNo)
+      .then(function () { return API.lots(); })
+      .then(function (rows) {
+        rows.forEach(function (l) { lotsByNo[l.lot_no] = l; });
+        return AUTH.refresh();
+      })
+      .then(render)
+      .catch(function (err) { alert(err.message || 'That did not go through.'); b.disabled = false; });
+  });
 
   AUTH.bindPaddle();
   AUTH.onChange(render);

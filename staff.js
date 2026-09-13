@@ -35,7 +35,9 @@
     var cells = [
       ['Open now',        s.open_lots],
       ['Closing in 24h',  s.closing_24h],
-      ['Won, to collect', s.closed_won],
+      ['Awaiting pickup', s.awaiting_pickup],
+      ['Due at counter',  money(s.due_total_cents)],
+      ['Past window',     s.overdue],
       ['Closed unsold',   s.closed_unsold],
       ['Hammer total',    money(s.hammer_total)],
       ['Paddles issued',  s.bidders_total]
@@ -51,6 +53,21 @@
     '</div>';
   }
 
+  /* Where a won lot stands, and the one button that stops its clock. */
+  function settleCell(r) {
+    if (r.settled_at)  return '<span class="office__ok">collected</span>';
+    if (r.forfeited_at) return '<span class="office__none">forfeited &middot; relisted</span>';
+    if (r.declined_at) return '<span class="office__no-reserve">handed back &middot; relisting</span>';
+    if (!r.settle_by)  return '<span class="office__none">&mdash;</span>';
+    var by  = new Date(r.settle_by);
+    var hrs = (by.getTime() - API.serverNow().getTime()) / 3600000;
+    var when = by.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return '<span class="' + (hrs <= 0 ? 'office__no-reserve' : hrs < 24 ? 'office__soon' : '') + '">' +
+             (hrs <= 0 ? 'past window' : 'by ' + when) + '</span>' +
+           '<button type="button" class="linkbtn office__settle" data-settle="' + r.lot_no + '">' +
+             'Mark collected</button>';
+  }
+
   function table(title, rows, kind) {
     if (!rows.length) return '';
     var isWon = kind === 'won';
@@ -62,8 +79,8 @@
           '<th scope="col">Lot</th>' +
           (isWon ? '<th scope="col">Winner</th><th scope="col">Contact</th>' : '') +
           '<th scope="col">' + (isWon ? 'Hammer' : 'Bid') + '</th>' +
-          '<th scope="col">' + (isWon ? 'Protection' : 'Bidders') + '</th>' +
-          '<th scope="col">' + (isWon ? 'Reserve' : 'Closes') + '</th>' +
+          '<th scope="col">' + (isWon ? 'Due at counter' : 'Bidders') + '</th>' +
+          '<th scope="col">' + (isWon ? 'Settlement' : 'Closes') + '</th>' +
         '</tr></thead><tbody>' +
         rows.map(function (r) {
           var ms = new Date(r.ends_at).getTime() - API.serverNow().getTime();
@@ -85,14 +102,11 @@
               (r.retail_cents ? '<span class="office__no">retail ' + money(r.retail_cents) + '</span>' : '') +
             '</td>' +
             (isWon
-              ? '<td class="office__num">' + (r.protection
-                    ? money(r.protection_cents)
-                    : '<span class="office__none">none</span>') + '</td>' +
-                '<td>' + (r.reserve_cents
-                    ? (r.met_reserve
-                        ? '<span class="office__ok">met</span>'
-                        : '<span class="office__no-reserve">short of ' + money(r.reserve_cents) + '</span>')
-                    : '<span class="office__none">none set</span>') + '</td>'
+              ? '<td class="office__num">' + money(r.due_cents) +
+                  '<span class="office__no">' +
+                    (r.protection ? 'inc. protection ' + money(r.protection_cents) + ' &middot; ' : '') +
+                    'tax ' + money(r.tax_cents) + '</span></td>' +
+                '<td>' + settleCell(r) + '</td>'
               : '<td class="office__num">' + r.bidder_count + '</td>' +
                 '<td class="office__num" data-ends="' + esc(r.ends_at) + '">' + left(ms) + '</td>') +
           '</tr>';
@@ -109,7 +123,17 @@
     var now = API.serverNow().getTime();
     var closed  = lots.filter(function (l) { return l.status !== 'open'; });
     var won     = closed.filter(function (l) { return l.winner_paddle; });
-    var unsold  = closed.filter(function (l) { return !l.winner_paddle; });
+    var unsold  = closed.filter(function (l) { return !l.winner_paddle && !l.relist_of_lot_no; });
+    /* "To collect" has to mean still outstanding, or it fills up with finished
+       business and stops being a work list. */
+    var owed    = won.filter(function (l) {
+      return l.sold && !l.settled_at && !l.declined_at && !l.forfeited_at;
+    });
+    var overdue = owed.filter(function (l) {
+      return l.settle_by && new Date(l.settle_by).getTime() <= now;
+    });
+    var current = owed.filter(function (l) { return overdue.indexOf(l) === -1; });
+    var done    = won.filter(function (l) { return owed.indexOf(l) === -1; });
     var soon    = lots.filter(function (l) {
       return l.status === 'open' && new Date(l.ends_at).getTime() - now < 24 * 3600e3;
     });
@@ -118,10 +142,12 @@
     });
 
     var html =
-      table('To collect', won, 'won') +
+      table('Past the window &mdash; relisting', overdue, 'won') +
+      table('To collect', current, 'won') +
       table('Closing within a day', soon, 'open') +
       table('Open, later', later, 'open') +
-      table('Closed with no bids &mdash; relist', unsold, 'won');
+      table('Closed with no bids &mdash; relist', unsold, 'won') +
+      table('Settled and handed back', done, 'won');
 
     host.innerHTML = html || '<p class="lots__empty">Nothing listed yet.</p>';
   }
@@ -152,6 +178,18 @@
           : '<p class="lots__empty">Could not load the office view. ' + esc(err.message || '') + '</p>';
       });
   }
+
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-settle]');
+    if (!b) return;
+    var lotNo = Number(b.dataset.settle);
+    if (!confirm('Mark lot ' + lotNo + ' collected?\n\nThis stops its settlement clock so it ' +
+                 'will not relist.')) return;
+    b.disabled = true;
+    API.settleLot(lotNo)
+      .then(load)
+      .catch(function (err) { alert(err.message || 'That did not go through.'); b.disabled = false; });
+  });
 
   AUTH.bindPaddle();
   AUTH.onChange(load);

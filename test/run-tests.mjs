@@ -51,6 +51,7 @@ for (const f of ['./00_auth_shim.sql',
                  '../supabase/migrations/0008_lot_detail.sql',
                  '../supabase/migrations/0009_sales_tax.sql',
                  '../supabase/migrations/0010_settlement.sql',
+                 '../supabase/migrations/0011_office_settlement.sql',
                  '../supabase/seed.sql']) {
   try {
     await db.query(read(f));

@@ -650,3 +650,18 @@ button{ font:inherit; color:inherit; }
   max-width:74ch;
 }
 .foot__legal b{ color:var(--ink-2); font-weight:400; }
+
+/* ---------- settlement ---------- */
+.office__soon{ color:var(--flag-txt); font-weight:600; }
+.office__settle, .pos__decline{
+  display:block; margin-top:.3rem; font-family:var(--f-data); font-size:.62rem;
+  letter-spacing:.06em; text-transform:uppercase;
+}
+.pos__settle{
+  display:block; margin-top:.3rem; font-family:var(--f-data); font-size:.64rem;
+  letter-spacing:.04em; color:var(--ink-3);
+}
+.pos__settle.is-urgent{ color:var(--flag-txt); font-weight:700; }
+.pos__settle.is-done{ color:var(--verdict); }
+.pos__settle.is-back{ color:var(--ink-3); }
+.pos tr.is-owed td:first-child{ border-left:3px solid var(--flag); padding-left:.7rem; }
