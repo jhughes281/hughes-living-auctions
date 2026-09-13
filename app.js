@@ -443,8 +443,13 @@
     var dollars = parseFloat(fMax.value);
     var cents = isNaN(dollars) ? 0 : Math.round(dollars * 100);
     var prot = fProtect.checked && cents > 0 ? API.protectionCents(cents) : 0;
-    sCost.textContent = prot ? money2(prot) : '—';
-    sTotal.textContent = cents ? money2(cents + prot) : '—';
+    /* Tax is on the goods. Whether a service contract is taxable in Texas is a
+       question for an accountant, so protection is left out rather than
+       quietly charged. */
+    var tax  = cents > 0 ? API.taxCents(cents) : 0;
+    sCost.textContent  = prot ? money2(prot) : '—';
+    if (sTax) sTax.textContent = tax ? money2(tax) : '—';
+    sTotal.textContent = cents ? money2(cents + prot + tax) : '—';
   }
 
   function paintSheetNow() {

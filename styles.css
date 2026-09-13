@@ -639,3 +639,14 @@ button{ font:inherit; color:inherit; }
   .shot{ width:92px; }
   .shot img{ height:68px; }
 }
+.sheet__tax{
+  display:flex; justify-content:space-between; margin-top:.7rem;
+  font-family:var(--f-body); font-variant-numeric:tabular-nums;
+  font-size:.88rem; color:var(--ink-3);
+}
+.sheet__tax b{ font-family:var(--f-data); font-weight:700; font-size:.7rem; color:var(--ink-3); }
+.foot__legal{
+  margin:1.1rem 0 0; font-size:.74rem; line-height:1.6; color:var(--ink-3);
+  max-width:74ch;
+}
+.foot__legal b{ color:var(--ink-2); font-weight:400; }

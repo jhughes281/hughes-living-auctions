@@ -31,6 +31,12 @@
     if (price < 100000) return 2500;
     return 5000;
   }
+  /* Mirrors sales_tax_bps() and tax_cents() from 0009_sales_tax.sql. Same rule
+     as the increments above: the rate changes in SQL first and here second. */
+  var TAX_BPS = 825;
+  function taxCents(amount) {
+    return Math.floor((amount * TAX_BPS / 10000) + 0.5);
+  }
   function protectionCents(amount) {
     return Math.max(800, Math.ceil(amount * 0.06));
   }
@@ -698,5 +704,7 @@
 
   backend.incrementCents  = incrementCents;
   backend.protectionCents = protectionCents;
+  backend.taxCents        = taxCents;
+  backend.taxRate         = TAX_BPS / 100;   /* 8.25, for display */
   global.HLA_API = backend;
 })(window);
