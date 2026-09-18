@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy &mdash; Hughes Living Auctions</title>
+<meta name="description" content="What Hughes Living Auctions collects, why, and who else can see it.">
+<link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="Privacy &mdash; Hughes Living Auctions">
+<meta property="og:description" content="Furniture bought by the pallet, repaired on the bench, and auctioned with the damage printed on the tag.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://jhughes281.github.io/hughes-living-auctions/brand/og-logo.png">
+<meta property="og:url" content="https://jhughes281.github.io/hughes-living-auctions/">
+<link rel="canonical" href="https://jhughes281.github.io/hughes-living-auctions/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600&family=Courier+Prime:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+
+<header class="masthead">
+  <div class="wrap masthead__in">
+    <a class="mark" href="#top" aria-label="Hughes Living Auctions, back to top">
+      <img class="mark__logo" src="brand/logo-twoline.svg" width="3250" height="1765" alt="Hughes Living Auctions">
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="#lots">Live lots</a>
+      <a href="#tag">The tag</a>
+      <a href="#protection">Protection</a>
+      <a href="#bidding">Bidding &amp; pickup</a>
+      <a href="#closed">Closed</a>
+      <a href="paddle.html">Your paddle</a>
+      <a href="staff.html" data-staff-only hidden>Office</a>
+    </nav>
+    <button class="paddle" type="button" data-paddle><span data-paddle-label>Sign in</span> <b data-paddle-no></b></button>
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="mobnav" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="wrap"><div class="mobnav" id="mobnav">
+    <a href="#lots">Live lots</a>
+    <a href="#tag">The tag</a>
+    <a href="#protection">Protection</a>
+    <a href="#bidding">Bidding &amp; pickup</a>
+    <a href="#closed">Closed</a>
+    <a href="paddle.html">Your paddle</a>
+    <a href="staff.html" data-staff-only hidden>Office</a>
+    <button class="paddle" type="button" data-paddle><span data-paddle-label>Sign in</span> <b data-paddle-no></b></button>
+  </div></div>
+</header>
+
+<main id="main">
+<section class="band legal">
+  <div class="wrap">
+    <p class="eyebrow">Privacy</p>
+    <h1 class="sect-title">What we keep, and why</h1>
+    <p class="lede">Short version: an email address, your bids, and nothing else.
+      We do not track you around the internet and we have nothing to sell.</p>
+
+    <p class="legal__stamp">Last updated <time datetime="2026-09-18">18 September 2026</time>.
+      <b>Draft.</b> This describes what the system actually does today, verified
+      against the code. It has not been reviewed by a lawyer.</p>
+
+    <h2>What we collect</h2>
+    <table class="legal__table">
+      <thead><tr><th scope="col">Thing</th><th scope="col">Why</th></tr></thead>
+      <tbody>
+        <tr><td>Email address</td><td>It is your account, and how we tell you that you have been outbid or that a lot is waiting for collection.</td></tr>
+        <tr><td>Password</td><td>Stored as a one-way hash by our authentication provider. Nobody here can read it, including us.</td></tr>
+        <tr><td>Paddle number</td><td>Issued once, identifies you on a lot without using your name.</td></tr>
+        <tr><td>Your bids</td><td>Every bid, permanently. This is the record of what you agreed to buy, and it is what protects you in a dispute.</td></tr>
+        <tr><td>Your maximum</td><td>Held so the system can bid for you. Never shown to another bidder, and not on the office screen.</td></tr>
+        <tr><td>Your watchlist</td><td>So the lots you starred are there on your phone and your laptop both.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>What we do not collect</h2>
+    <p>We do not record your IP address or your browser when you bid. We run no
+      analytics, no advertising pixels, and no cross-site trackers. There is no
+      cookie banner because there is nothing to consent to: the only thing stored
+      in your browser is the token that keeps you signed in.</p>
+
+    <h2>Who else sees anything</h2>
+    <p>Three companies are involved in serving this site, and each sees something:</p>
+    <ul class="legal__list">
+      <li><b>GitHub</b> hosts the pages. Like any web host, it sees the requests
+        that fetch them.</li>
+      <li><b>Supabase</b> holds the database and the sign-in system, on servers in
+        the United States. Accounts, bids and watchlists live there.</li>
+      <li><b>Google Fonts</b> serves the typefaces. Loading a font from Google
+        means Google receives your IP address. We use it for speed, and we would
+        rather say so than not.</li>
+    </ul>
+    <p>We do not sell anything to anyone, and we do not share your address with
+      other bidders. A winning bidder&rsquo;s contact details are visible only to
+      us, and only so we can arrange collection.</p>
+
+    <h2>What other bidders can see</h2>
+    <p>Nothing that identifies you. Other people see that a lot has bids and what
+      the price is. They do not see who bid, what your maximum is, or how many
+      lots you are watching. That is enforced by the database, not by the page
+      choosing not to show it.</p>
+
+    <h2>How long we keep it</h2>
+    <p>Bids are kept permanently. They are the record of a sale, and deleting them
+      would leave both of us unable to prove what happened. Account details are
+      kept while your paddle is active.</p>
+
+    <h2>Your choices</h2>
+    <p>Ask us for a copy of what we hold on you, or ask us to close your account,
+      at <b>CONTACT_EMAIL</b>. Closing an account removes your contact details.
+      Bids stay, because they are part of the sale record, but they stop being
+      linked to a live account.</p>
+    <p>You can change your password any time from your paddle page.</p>
+
+    <h2>Children</h2>
+    <p>This is not a site for children and you must be old enough to enter a
+      binding contract to bid.</p>
+
+    <h2>Changes</h2>
+    <p>If we start collecting something new &mdash; analytics, a pickup address, a
+      card on file &mdash; this page changes first, and the date at the top changes
+      with it.</p>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__grid">
+      <div>
+        <a class="mark mark--foot" href="#top" aria-label="Hughes Living Auctions, back to top">
+          <img class="mark__logo" src="brand/logo-stacked.svg" width="3250" height="2075" alt="Hughes Living Co. Auctions">
+        </a>
+        <p class="foot__note">The repair bench behind Hughes Living Co. Pallets come in Tuesday, lots open Friday, everything closes Sunday night.</p>
+      </div>
+      <div>
+        <h2 class="foot__h">Auction</h2>
+        <ul>
+          <li><a href="#lots">Open lots</a></li>
+          <li><a href="#closed">Closed results</a></li>
+          <li><a href="#tag">Grade rubric</a></li>
+          <li><a href="#bidding">Increments and rules</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="foot__h">The shop</h2>
+        <ul>
+          <li><a href="#bidding">Pickup and delivery</a></li>
+          <li><a href="#protection">Bench protection</a></li>
+          <li><a href="https://hugheslivingco.com">Hughes Living Co. store</a></li>
+          <li><a href="mailto:auctions@hugheslivingco.com">auctions@hugheslivingco.com</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot__base">
+      <span>&copy; 2026 Hughes Living Co.</span>
+      <span><a href="terms.html">Terms of sale</a> &middot; <a href="privacy.html">Privacy</a></span>
+    </div>
+    <p class="foot__legal">
+      <!-- TODO: replace LEGAL_ENTITY with the name on the Certificate of Formation,
+           and confirm the assumed-name filing is on record with the county clerk
+           and the Texas Secretary of State before the first sale. -->
+      Hughes Living Auctions and Hughes Living Co. are assumed names of
+      <b>LEGAL_ENTITY</b>, a Texas seller permitted by the Comptroller of Public
+      Accounts. Texas sales tax is collected on every lot at the Houston rate
+      &mdash; 6.25% state, 1.00% City of Houston, 1.00% Houston MTA &mdash; and
+      remitted to the Comptroller.
+      <!-- The permit NUMBER is deliberately not published. Texas issues sole
+           proprietors a taxpayer number built around the holder's SSN, and this
+           permit is in a personal name. Buyers do not need it; suppliers get it
+           on a resale certificate, privately. -->
+    </p>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script src="auth.js"></script>
+<script src="legal.js"></script>
+</body>
+</html>

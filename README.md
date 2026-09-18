@@ -140,8 +140,45 @@ what makes the rest of the listing believable.
   Two store values were darkened to clear WCAG AA at small sizes: muted text `#868686` → `#707070`
   and success green `#428445` → `#3D7A40`. The sale red `#FC5732` is used as a fill only; small
   red text uses `#C93C19`.
-- `app.js` — lot data + auction engine
-- `img/` — lot photos, pulled from the Hughes Living product library and downscaled to 1000px
+- `app.js` — the lot list: grid, filters, clocks, the bid sheet
+- `lot.html` / `lot.js` — one lot at its own address, with the photo gallery,
+  dimensions and the condition ledger. This is the page you send someone.
+- `paddle.html` / `paddle.js` — where a bidder stands: lots in play, outbid first,
+  their own maximum, and the settlement clock on anything they have won
+- `staff.html` / `staff.js` — the office view. What closed, who won, what to
+  collect, whose window runs out tonight. Hidden from bidders and refused by the
+  database, not just by the page.
+- `terms.html` / `privacy.html` — what a bidder agrees to, and what is kept
+- `auth.js` — sign in, register, change and reset a password. Injects its own
+  dialogs so all six pages share one, rather than six copies drifting apart.
+- `api.js` — the seam. Three interchangeable backends (`demo`, `local`,
+  `supabase`); the pages never decide an auction question themselves.
+- `tools/import-lots.mjs` — the bulk importer. CSV in, validated lots out.
+- `tools/images-to-storage.mjs` — moves photos out of git into Supabase Storage
+- `img/` — lot photos. Being migrated to Storage; git is not an image host.
+
+## The migrations, in order
+
+Each one is a published rule or a piece of state, and every rule the site
+prints lives in SQL rather than in the page.
+
+| | |
+|---|---|
+| `0001_auction_core` | tables, increments, proxy resolution, the two-minute rule, RLS |
+| `0002_realtime_and_close` | realtime publication, the closing sweeper |
+| `0003_auth_bridge` | issues a paddle on signup, `server_now()` |
+| `0004_hardening` | revokes the default grants Supabase hands out |
+| `0005_lot_import` | `import_key`, auto lot numbers, the Found/Fixed/Still constraint |
+| `0006_staff_view` | `is_staff`, the office view, gated in the database |
+| `0007_rules_hardening` | reserves actually enforced, `sold` as a public column |
+| `0008_lot_detail` | photo galleries, dimensions, attributes, account watchlist |
+| `0009_sales_tax` | the published rate, itemised |
+| `0010_settlement` | the four-day window, declining, and relisting |
+| `0011_office_settlement` | the settlement clock on the office screen |
+
+Changing a rate or a window is a migration on purpose: the number that applied
+to a sale is something you may have to justify later, and a value editable in a
+dashboard leaves no record of when it changed.
 
 ## What the engine does
 
@@ -155,9 +192,41 @@ what makes the rest of the listing believable.
 
 ## Before this goes live
 
-Bids run in the page — there is no server, so nothing is recorded and the prices reset on
-reload. Real bidding needs a backend (or an auction platform) behind the same front end.
+The engine is real and hosted: bids are recorded, prices are derived server-side,
+and the clock is the server's. The line that used to be here — "bids run in the
+page, there is no server" — has been wrong since the Supabase project went up.
 
-Placeholder content to replace: lot inventory and prices, the closed-results table, pickup
-address and hours, `auctions@hugheslivingco.com`, and the protection terms — those need to
-match whatever you can actually stand behind.
+What genuinely stands between this and a first sale:
+
+**Needs a person, not code**
+
+- `LEGAL_ENTITY` in the footer of every page, and in `terms.html`. The sales tax
+  permit is issued to a personal name with the business name "Hughes Furniture",
+  which is neither name the site trades under.
+- `CONTACT_EMAIL` — `auctions@hugheslivingco.com` does not exist yet.
+- Pickup address and hours. Nowhere on the site.
+- Bench protection terms. 6% of the hammer, $8 minimum, ninety days is invented
+  text, and Texas may treat a paid coverage plan as a service contract with its
+  own registration requirements.
+- A lawyer over `terms.html` and `privacy.html`. Both are drafts that describe
+  the real system accurately; neither has been reviewed.
+- Photographs of the flaws. Every lot page still says the flaw is not pictured,
+  because it is not. The gallery is built and waiting.
+
+**Needs building**
+
+- SMTP. Supabase's built-in sender allows two emails an hour and the limit is
+  locked. Without it there is no registration confirmation, no password
+  recovery, and no way to tell a winner their four-day window has started.
+- Outbid and settlement notifications. Not auth emails, so SMTP alone does not
+  provide them — they need a trigger and an Edge Function.
+- Payments. A winner who cannot be charged is not a sale.
+
+**Known and deliberate**
+
+- Nothing prevents the seller bidding on their own lots. No technical control
+  exists, and `lot_events` would record it plainly. Worth a rule before anyone
+  else has an account.
+- Relisted lots reopen for 72 hours by default. That number is a guess, and the
+  real answer probably depends on whether forfeited stock should join the next
+  scheduled sale instead.

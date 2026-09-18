@@ -665,3 +665,36 @@ button{ font:inherit; color:inherit; }
 .pos__settle.is-done{ color:var(--verdict); }
 .pos__settle.is-back{ color:var(--ink-3); }
 .pos tr.is-owed td:first-child{ border-left:3px solid var(--flag); padding-left:.7rem; }
+
+/* ---------- terms and privacy ---------- */
+.legal .wrap{ max-width:76ch; }
+.legal h2{
+  font-family:var(--f-disp); font-weight:600; color:var(--ink);
+  font-size:1.35rem; line-height:1.2; letter-spacing:0;
+  margin:2.6rem 0 .7rem; padding-top:1.4rem; border-top:1px solid var(--line);
+}
+.legal p{ margin:0 0 1rem; }
+.legal b{ color:var(--ink); font-weight:600; }
+.legal__stamp{
+  font-family:var(--f-data); font-size:.74rem; line-height:1.6; color:var(--ink-3);
+  border:1px solid var(--line); border-left:3px solid var(--accent);
+  padding:.9rem 1.1rem; margin:1.6rem 0 0; background:var(--card);
+}
+.legal__todo{
+  border:1px solid var(--flag-txt); border-left:3px solid var(--flag-txt);
+  background:var(--card); padding:.9rem 1.1rem; color:var(--flag-txt);
+  font-size:.92rem;
+}
+.legal__list{ margin:0 0 1rem; padding-left:1.1rem; }
+.legal__list li{ margin-bottom:.6rem; }
+.legal__table{ width:100%; border-collapse:collapse; margin:0 0 1.4rem; }
+.legal__table th, .legal__table td{
+  text-align:left; padding:.7rem .9rem .7rem 0; border-bottom:1px solid var(--line);
+  vertical-align:top; font-size:.92rem;
+}
+.legal__table thead th{
+  font-family:var(--f-data); font-weight:700; font-size:.62rem; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+.foot__base a{ text-decoration:none; color:var(--ink-3); }
+.foot__base a:hover{ color:var(--accent); }
