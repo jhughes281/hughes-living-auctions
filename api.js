@@ -142,6 +142,7 @@
       isStaff: function () { return Promise.resolve(false); },
       lotImages: function () { return Promise.resolve([]); },
       declineLot: function () { return Promise.reject(AuctionError('Not in the demonstration build.')); },
+      myStanding: function () { return Promise.resolve(null); },
       settleLot:  function () { return Promise.reject(AuctionError('Not in the demonstration build.')); },
 
       placeBid: function (lotNo, maxCents, protection) {
@@ -278,6 +279,7 @@
       isStaff: function () { return Promise.resolve(false); },
       lotImages: function () { return Promise.resolve([]); },
       declineLot: function () { return Promise.reject(AuctionError('Not in the demonstration build.')); },
+      myStanding: function () { return Promise.resolve(null); },
       settleLot:  function () { return Promise.reject(AuctionError('Not in the demonstration build.')); },
 
       signIn: function (email /*, password: dev server is passwordless */) {
@@ -655,9 +657,26 @@
               if (/already settled/i.test(m)) {
                 throw AuctionError('That lot has already been collected.');
               }
+              if (/no walk-aways left/i.test(m)) {
+                throw AuctionError('You have used all your walk-aways, so this lot needs to be ' +
+                                   'paid for and collected. Missing it will suspend your paddle.');
+              }
               throw AuctionError(m);
             }
             return r.data;
+          });
+      },
+
+      /* Your walk-aways and paid lots, from my_standing() in 0012. The
+         database does the counting; this only shows it. */
+      myStanding: function () {
+        return client().then(function (c) { return c.rpc('my_standing'); })
+          .then(function (r) {
+            if (r.error) {
+              console.warn('my_standing unavailable (' + r.error.message + ')');
+              return null;
+            }
+            return (r.data && r.data[0]) || null;
           });
       },
 

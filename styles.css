@@ -598,6 +598,17 @@ button{ font:inherit; color:inherit; }
   margin:0 0 1.8rem; padding-bottom:1.2rem; border-bottom:1px solid var(--line);
 }
 .acct b{ color:var(--ink); font-weight:400; }
+.standing{
+  font-size:.95rem; color:var(--ink-2); margin:-.6rem 0 1.8rem;
+}
+.standing b{ color:var(--ink); }
+.standing__gold{
+  display:inline-block; font-family:var(--f-data); font-weight:700; font-size:.68rem;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--accent);
+  border:1px solid var(--accent); padding:.1rem .45rem; margin-right:.35rem; vertical-align:.1em;
+}
+.standing__warn{ display:block; margin-top:.4rem; color:var(--flag-txt); font-size:.88rem; }
+.standing.is-suspended{ color:var(--flag-txt); border-left:3px solid var(--flag-txt); padding-left:.8rem; }
 
 /* ---------- the lot gallery ---------- */
 .shots{
@@ -668,12 +679,13 @@ button{ font:inherit; color:inherit; }
 
 /* ---------- terms and privacy ---------- */
 .legal .wrap{ max-width:76ch; }
-.legal h2{
+.legal h2{ scroll-margin-top:6rem;
   font-family:var(--f-disp); font-weight:600; color:var(--ink);
   font-size:1.35rem; line-height:1.2; letter-spacing:0;
   margin:2.6rem 0 .7rem; padding-top:1.4rem; border-top:1px solid var(--line);
 }
 .legal p{ margin:0 0 1rem; }
+.legal h3{ font-family:var(--f-body); font-size:1rem; font-weight:600; color:var(--ink); margin:1.6rem 0 .5rem; }
 .legal b{ color:var(--ink); font-weight:600; }
 .legal__stamp{
   font-family:var(--f-data); font-size:.74rem; line-height:1.6; color:var(--ink-3);

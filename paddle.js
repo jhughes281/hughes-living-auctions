@@ -10,6 +10,7 @@
   var AUTH = window.HLA_AUTH;
   var host = document.getElementById('posHost');
   var lotsByNo = {};
+  var standing = null;   /* my_standing(): walk-aways left, paid lots, gold */
 
   function money(c) { return '$' + Math.round(c / 100).toLocaleString('en-US'); }
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
@@ -39,14 +40,54 @@
     return '<span class="pos__settle' + (hrs < 24 ? ' is-urgent' : '') + '">' +
              (hrs <= 0 ? 'Past the collection window' : 'Collect by ' + when) +
            '</span>' +
-           '<button type="button" class="linkbtn pos__decline" data-decline="' + l.lot_no + '">' +
-             'I no longer want this' + '</button>';
+           (standing && standing.remaining <= 0
+             ? '<span class="pos__settle is-urgent">No walk-aways left &mdash; this one needs collecting</span>'
+             : '<button type="button" class="linkbtn pos__decline" data-decline="' + l.lot_no + '">' +
+                 'I no longer want this' + '</button>');
   }
 
-  function render() {
+  /* Walk-aways and paid lots. The database counts; this page only reports,
+     and re-draws the table if the count moved so the hand-back buttons match. */
+  function paintStanding() {
+    var el = document.getElementById('posStanding');
+    if (!el) return;
+    if (!standing) { el.innerHTML = ''; return; }
+    var st = standing;
+    if (st.suspended) {
+      el.innerHTML = '<p class="standing is-suspended"><b>This paddle is suspended</b> for a won ' +
+        'lot that was not paid for or collected. You can still collect lots you have won. ' +
+        'Contact us to have bidding restored.</p>';
+      return;
+    }
+    var nextAt = (Math.floor(st.paid_lots / 5) + 1) * 5;
+    el.innerHTML = '<p class="standing">' +
+      (st.gold ? '<span class="standing__gold">Gold buyer</span> ' : '') +
+      '<b>' + st.remaining + ' of ' + st.allowance + '</b> walk-aways left' +
+      ' &middot; ' + st.paid_lots + (st.paid_lots === 1 ? ' lot' : ' lots') + ' paid for' +
+      ' &middot; ' + (nextAt - st.paid_lots) + ' more to earn another' +
+      (st.paid_lots === 0
+        ? '<span class="standing__warn">Until your first lot is paid for, letting a win run ' +
+          'out without handing it back suspends your paddle.</span>'
+        : '') +
+      ' <a href="terms.html#paying">How this works</a></p>';
+  }
+
+  function loadStanding() {
+    if (!API.myStanding) return;
+    API.myStanding().then(function (st) {
+      var moved = JSON.stringify(st) !== JSON.stringify(standing);
+      standing = st;
+      paintStanding();
+      if (moved) render(true);
+    });
+  }
+
+  function render(fromStanding) {
     var s = AUTH.session;
 
     if (!s.signedIn) {
+      standing = null;
+      paintStanding();
       host.innerHTML = '<p class="lots__empty">Sign in to see your lots. ' +
         '<button class="linkbtn" id="goIn">Sign in</button></p>';
       document.getElementById('goIn').addEventListener('click', function () {
@@ -68,6 +109,7 @@
         AUTH.openPassword();
       });
     }
+    if (!fromStanding) loadStanding();
 
     var rows = (s.positions || []).slice().sort(function (a, b) {
       /* losing first — those are the ones that need you */

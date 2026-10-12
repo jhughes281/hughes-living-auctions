@@ -175,6 +175,7 @@ prints lives in SQL rather than in the page.
 | `0009_sales_tax` | the published rate, itemised |
 | `0010_settlement` | the four-day window, declining, and relisting |
 | `0011_office_settlement` | the settlement clock on the office screen |
+| `0012_buyer_standing` | walk-aways (2, +1 per 5 paid), gold buyers, suspension for non-payment |
 
 Changing a rate or a window is a migration on purpose: the number that applied
 to a sale is something you may have to justify later, and a value editable in a
