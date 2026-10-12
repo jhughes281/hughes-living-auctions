@@ -710,3 +710,8 @@ button{ font:inherit; color:inherit; }
 }
 .foot__base a{ text-decoration:none; color:var(--ink-3); }
 .foot__base a:hover{ color:var(--accent); }
+.office__settle[data-restore]{ white-space:nowrap; }
+@media (max-width:820px){
+  .office--susp tr{ grid-template-columns:1fr; }
+  .office--susp td{ overflow-wrap:anywhere; }
+}

@@ -115,7 +115,41 @@
     '</section>';
   }
 
-  function render(lots, sum) {
+  /* Paddles 0012 suspended for not paying, with the reason it recorded and
+     the record behind it. Restoring lifts the block only: their walk-aways
+     stay spent, so another lapse suspends them again. */
+  function suspendedTable(rows) {
+    if (!rows || !rows.length) return '';
+    return '' +
+    '<section class="office__group">' +
+      '<h2 class="office__h">Suspended paddles <span>' + rows.length + '</span></h2>' +
+      '<table class="office office--susp">' +
+        '<thead><tr>' +
+          '<th scope="col">Paddle</th><th scope="col">Contact</th>' +
+          '<th scope="col">Why</th><th scope="col">Record</th><th scope="col"></th>' +
+        '</tr></thead><tbody>' +
+        rows.map(function (r) {
+          var when = r.suspended_at
+            ? new Date(r.suspended_at).toLocaleString('en-US', { month: 'short', day: 'numeric' })
+            : '';
+          return '<tr>' +
+            '<td><b>' + r.paddle + '</b><span class="office__no">' + esc(r.display_name || '') + '</span></td>' +
+            '<td>' + (r.email
+              ? '<a href="mailto:' + esc(r.email) + '">' + esc(r.email) + '</a>' : '&mdash;') + '</td>' +
+            '<td>' + esc(r.suspended_reason || 'Suspended by hand') +
+              '<span class="office__no">' + (when ? 'since ' + when : '') +
+              (r.restored_before ? (when ? ' &middot; ' : '') + 'suspended before' : '') + '</span></td>' +
+            '<td class="office__num">' + r.paid_lots + ' paid' +
+              '<span class="office__no">' + r.walked_lots + ' of ' + r.allowance + ' walk-aways used</span></td>' +
+            '<td><button type="button" class="linkbtn office__settle" data-restore="' + r.paddle + '">' +
+              'Restore bidding</button></td>' +
+          '</tr>';
+        }).join('') +
+      '</tbody></table>' +
+    '</section>';
+  }
+
+  function render(lots, sum, suspended) {
     document.getElementById('staffEyebrow').textContent =
       'Office · paddle ' + AUTH.session.paddle;
     sumHost.innerHTML = summary(sum);
@@ -147,7 +181,8 @@
       table('Closing within a day', soon, 'open') +
       table('Open, later', later, 'open') +
       table('Closed with no bids &mdash; relist', unsold, 'won') +
-      table('Settled and handed back', done, 'won');
+      table('Settled and handed back', done, 'won') +
+      suspendedTable(suspended);
 
     host.innerHTML = html || '<p class="lots__empty">Nothing listed yet.</p>';
   }
@@ -167,8 +202,17 @@
       document.getElementById('goIn').addEventListener('click', function () { AUTH.open(load); });
       return;
     }
-    Promise.all([API.staffLots(), API.staffSummary()])
-      .then(function (r) { render(r[0], r[1]); })
+    Promise.all([API.staffLots(), API.staffSummary(),
+                 /* A database without 0013 should cost this one table, not the
+                    whole office view. */
+                 API.staffSuspended
+                   ? API.staffSuspended().catch(function (err) {
+                       if (err.code === 'NOTSTAFF') throw err;
+                       console.warn('suspended list unavailable (' + err.message + ')');
+                       return [];
+                     })
+                   : []])
+      .then(function (r) { render(r[0], r[1], r[2]); })
       .catch(function (err) {
         sumHost.innerHTML = '';
         host.innerHTML = err.code === 'NOTSTAFF'
@@ -178,6 +222,18 @@
           : '<p class="lots__empty">Could not load the office view. ' + esc(err.message || '') + '</p>';
       });
   }
+
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-restore]');
+    if (!b) return;
+    var paddle = Number(b.dataset.restore);
+    if (!confirm('Restore bidding for paddle ' + paddle + '?\n\nTheir walk-aways stay used, ' +
+                 'so letting another win lapse will suspend them again.')) return;
+    b.disabled = true;
+    API.restoreBidder(paddle)
+      .then(load)
+      .catch(function (err) { alert(err.message || 'That did not go through.'); b.disabled = false; });
+  });
 
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-settle]');

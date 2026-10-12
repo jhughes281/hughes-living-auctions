@@ -717,6 +717,27 @@
             return r.data || [];
           });
       },
+      /* Suspended paddles and the button that lifts one (0013). Both gated on
+         is_staff in the database. */
+      staffSuspended: function () {
+        return client().then(function (c) { return c.rpc('staff_suspended'); })
+          .then(function (r) {
+            if (r.error) {
+              if (/not staff/i.test(r.error.message || '')) {
+                throw AuctionError('This paddle does not have office access.', 'NOTSTAFF');
+              }
+              throw AuctionError(r.error.message);
+            }
+            return r.data || [];
+          });
+      },
+      restoreBidder: function (paddle) {
+        return client().then(function (c) { return c.rpc('staff_restore_bidder', { p_paddle: paddle }); })
+          .then(function (r) {
+            if (r.error) throw AuctionError(r.error.message);
+            return r.data;
+          });
+      },
       staffSummary: function () {
         return client().then(function (c) { return c.rpc('staff_summary'); })
           .then(function (r) {

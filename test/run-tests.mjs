@@ -53,6 +53,7 @@ for (const f of ['./00_auth_shim.sql',
                  '../supabase/migrations/0010_settlement.sql',
                  '../supabase/migrations/0011_office_settlement.sql',
                  '../supabase/migrations/0012_buyer_standing.sql',
+                 '../supabase/migrations/0013_office_suspended.sql',
                  '../supabase/seed.sql']) {
   try {
     await db.query(read(f));
@@ -80,6 +81,8 @@ try {
   await db.query(strip(read('./06_settlement_test.sql')));
   console.log('\n== buyer standing: walk-aways, gold, and suspension ==');
   await db.query(strip(read('./07_standing_test.sql')));
+  console.log('\n== office: suspended paddles and restoring them ==');
+  await db.query(strip(read('./08_office_suspended_test.sql')));
 } catch (e) {
   console.log(`  ERROR: ${e.message}`);
   fail++;
