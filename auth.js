@@ -295,9 +295,10 @@
       var label = b.querySelector('[data-paddle-label]');
       var num   = b.querySelector('[data-paddle-no]');
       if (session.signedIn) {
-        if (label) label.textContent = 'PADDLE';
-        if (num) num.textContent = session.paddle;
-        b.setAttribute('aria-label', 'Paddle ' + session.paddle + '. Sign out.');
+        // the paddle number lives on the Your paddle page; the header button only says what it does
+        if (label) label.textContent = 'Sign out';
+        if (num) num.textContent = '';
+        b.setAttribute('aria-label', 'Sign out of paddle ' + session.paddle);
       } else {
         if (label) label.textContent = API.canSignIn ? 'Sign in' : 'Demo';
         if (num) num.textContent = '';
