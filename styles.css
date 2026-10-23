@@ -1,15 +1,20 @@
 /* Hughes Living Auctions
-   Palette, type and radii lifted from the live hugheslivingco.com theme so the auction
-   reads as the same company. Store token -> role is noted on each line. */
+   Palette, type and radii follow the hugheslivingco.com editorial redesign (Oct 23, 2026,
+   theme asset hlc-redesign.css) so the auction reads as the same company. Store value ->
+   role is noted on each line. The manila tag keeps its own colours; it is the auction's
+   signature, not a store element. */
 
 :root{
-  --ground:   #FBF6EE;   /* store --color-background */
-  --card:     #FFFFFF;   /* store --color-base-background */
-  --ink:      #000000;   /* store --color-foreground */
-  --ink-2:    #545454;   /* store --color-foreground2 */
-  --ink-3:    #707070;   /* store --color-base-text #868686, darkened to clear AA at small sizes */
-  --line:     #E4DCCE;   /* hairline mixed from the cream ground */
-  --accent:   #814037;   /* store --color-accent */
+  --ground:   #FFFFFF;   /* store page background */
+  --card:     #FFFFFF;
+  --cream:    #F7F5F0;   /* store --hlc-cream, raised bands */
+  --sand:     #F3F0E9;   /* store perks strip */
+  --ink:      #292822;   /* store --hlc-ink */
+  --ink-2:    #655F58;   /* store editorial body copy */
+  --ink-3:    #6F6A63;   /* store muted #726f69, nudged to clear AA on cream */
+  --line:     #E6E1D8;   /* hairline mixed from the cream */
+  --accent:   #806B56;   /* store --hlc-brown; eyebrows, links, focus */
+  --press:    #594A3B;   /* store dark-button hover */
   --flag:     #FC5732;   /* store --color-on-sale-badge-background — fills only */
   --flag-txt: #C93C19;   /* the same red darkened for small text */
   --verdict:  #3D7A40;   /* store --color-success-text #428445, darkened to clear AA */
@@ -19,7 +24,7 @@
   --f-body: "Albert Sans", system-ui, -apple-system, Segoe UI, sans-serif;  /* store font, for reading */
   --f-data: "Courier Prime", "Courier New", ui-monospace, monospace;        /* the tag, typed on the bench */
 
-  --r-btn: 3px;          /* store --rounded-button 0.3rem */
+  --r-btn: 0;            /* store buttons and cards are square */
   --wrap: 1240px;
   --gut: clamp(1.1rem, 4vw, 2.75rem);
   --sect: clamp(3.5rem, 8vw, 7rem);
@@ -50,18 +55,19 @@ button{ font:inherit; color:inherit; }
 
 /* ---------- type roles ---------- */
 .eyebrow{
-  font-family:var(--f-data); font-weight:700; font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;
+  font-family:var(--f-body); font-weight:700; font-size:.69rem; letter-spacing:.2em; text-transform:uppercase;
   color:var(--accent); margin:0 0 1.1rem;
 }
 .sect-title{
-  font-family:var(--f-disp); font-weight:500; color:var(--ink);
-  font-size:clamp(2.05rem,4.1vw,3.3rem); line-height:1.1; letter-spacing:-.005em; margin:0;
+  font-family:var(--f-disp); font-weight:400; color:var(--ink);
+  font-size:clamp(2.4rem,4.8vw,3.9rem); line-height:1.06; letter-spacing:-.025em; margin:0;
 }
+.sect-title em{ font-style:italic; }
 .lede{ max-width:52ch; margin:1rem 0 0; color:var(--ink-2); }
 
 /* ---------- header ---------- */
 .masthead{
-  position:sticky; top:0; z-index:40; background:rgba(251,246,238,.94);
+  position:sticky; top:0; z-index:40; background:rgba(255,255,255,.95);
   border-bottom:1px solid var(--line);
 }
 @supports (backdrop-filter: blur(4px)){ .masthead{ backdrop-filter:saturate(140%) blur(6px); } }
@@ -103,33 +109,35 @@ button{ font:inherit; color:inherit; }
 @media (min-width:1000px){ .hero__grid{ grid-template-columns:minmax(0,1fr) minmax(0,1.05fr); gap:4rem; } }
 
 .hero h1{
-  font-family:var(--f-disp); font-weight:500; color:var(--ink);
-  font-size:clamp(3rem,7.4vw,5.1rem); line-height:1.04; letter-spacing:-.012em; margin:0;
+  font-family:var(--f-disp); font-weight:400; color:var(--ink);
+  font-size:clamp(3.3rem,7.8vw,5.8rem); line-height:1.02; letter-spacing:-.03em; margin:0;
 }
-/* the italic is the face doing what it is good at, not a colour trick */
-.hero h1 em{ font-style:italic; font-weight:500; color:var(--accent); }
+/* the italic is the face doing what it is good at, not a colour trick — same ink, as on the store */
+.hero h1 em{ font-style:italic; font-weight:400; }
 .hero p{ max-width:46ch; margin:1.5rem 0 0; font-size:1.06rem; }
+.hero .eyebrow{ max-width:none; margin:0 0 1.3rem; font-size:.69rem; line-height:1.6; }
 .hero__acts{ display:flex; flex-wrap:wrap; gap:.85rem; margin-top:2rem; }
 
-/* store buttons: black fill, white label, 3px radius */
+/* store buttons: square, warm-black fill, tracked caps */
 .btn{
-  font-family:var(--f-body); font-size:.83rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
-  padding:.85rem 1.4rem; border:1px solid var(--ink); background:var(--ink); color:var(--card);
+  font-family:var(--f-body); font-size:.75rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  padding:1.05rem 1.5rem; border:1px solid var(--ink); background:var(--ink); color:var(--card);
   border-radius:var(--r-btn); cursor:pointer; text-decoration:none; display:inline-block; transition:background .18s,color .18s;
 }
-.btn:hover{ background:var(--accent); border-color:var(--accent); }
-.btn--ghost{ background:none; color:var(--ink); }
-.btn--ghost:hover{ background:var(--ink); color:var(--card); }
+.btn:hover{ background:var(--press); border-color:var(--press); }
+/* store secondary action: an underlined text link, not a second box */
+.btn--ghost{ background:none; color:var(--ink); border:0; border-bottom:1px solid var(--accent); padding:1.05rem 0 .55rem; }
+.btn--ghost:hover{ background:none; color:var(--press); border-color:var(--press); }
 .btn--block{ width:100%; text-align:center; }
 .btn[disabled]{ opacity:.4; cursor:not-allowed; }
 .btn[disabled]:hover{ background:var(--ink); border-color:var(--ink); }
 
 /* the pallet path — a real sequence, so it earns arrows */
-.path{ border-block:1px solid var(--line); background:var(--card); }
+.path{ background:var(--sand); }
 .path__in{ display:flex; flex-wrap:wrap; align-items:center; gap:.55rem 1rem; padding-block:1.1rem; }
-.path__lbl{ font-family:var(--f-data); font-weight:700; font-size:.66rem; letter-spacing:.1em; color:var(--ink-3); text-transform:uppercase; width:100%; }
+.path__lbl{ font-family:var(--f-body); font-weight:700; font-size:.66rem; letter-spacing:.2em; color:var(--ink-3); text-transform:uppercase; width:100%; }
 @media (min-width:760px){ .path__lbl{ width:auto; margin-right:.5rem; } }
-.path__step{ font-family:var(--f-data); font-size:.74rem; letter-spacing:.1em; color:var(--ink-2); text-transform:uppercase; }
+.path__step{ font-family:var(--f-body); font-weight:600; font-size:.68rem; letter-spacing:.16em; color:var(--ink-2); text-transform:uppercase; }
 .path__step b{ color:var(--accent); font-weight:400; }
 .path__arw{ color:var(--line); font-size:.8rem; }
 
@@ -248,7 +256,7 @@ button{ font:inherit; color:inherit; }
 
 /* ---------- sections ---------- */
 .band{ padding-block:var(--sect); }
-.band--raise{ background:var(--card); border-block:1px solid var(--line); }
+.band--raise{ background:var(--cream); }
 .band__head{ display:grid; gap:1rem; margin-bottom:2.5rem; }
 @media (min-width:860px){
   .band__head{ grid-template-columns:minmax(0,1fr) minmax(0,26rem); align-items:end; gap:3rem; }
@@ -261,13 +269,13 @@ button{ font:inherit; color:inherit; }
   padding-bottom:1.4rem; margin-bottom:2rem; border-bottom:1px solid var(--line);
 }
 .chip{
-  font-family:var(--f-data); font-size:.7rem; letter-spacing:.1em; text-transform:uppercase;
+  font-family:var(--f-body); font-weight:600; font-size:.68rem; letter-spacing:.14em; text-transform:uppercase;
   background:var(--card); border:1px solid var(--line); color:var(--ink-2);
   padding:.5rem .85rem; border-radius:var(--r-btn); cursor:pointer; transition:border-color .16s,color .16s;
 }
 .chip:hover{ border-color:var(--ink); color:var(--ink); }
 .chip[aria-pressed="true"]{ background:var(--ink); border-color:var(--ink); color:var(--card); }
-.rail__count{ margin-left:auto; font-family:var(--f-data); font-size:.72rem; color:var(--ink-3); }
+.rail__count{ margin-left:auto; font-family:var(--f-body); font-size:.78rem; color:var(--ink-3); }
 
 .lots{ display:grid; gap:1.5rem; grid-template-columns:1fr; }
 @media (min-width:620px){ .lots{ grid-template-columns:repeat(2,1fr); } }
@@ -390,8 +398,8 @@ button{ font:inherit; color:inherit; }
 .foot__grid{ display:grid; gap:2.5rem; }
 @media (min-width:800px){ .foot__grid{ grid-template-columns:1.4fr 1fr 1fr; gap:3rem; } }
 .mark--foot{ display:block; margin-bottom:1.2rem; }
-.foot .foot__h{ font-family:var(--f-data); font-weight:700; font-size:.64rem;
-  letter-spacing:.11em; text-transform:uppercase; color:var(--accent); margin:0 0 1rem; }
+.foot .foot__h{ font-family:var(--f-body); font-weight:700; font-size:.66rem;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--accent); margin:0 0 1rem; }
 .foot ul{ list-style:none; margin:0; padding:0; display:grid; gap:.6rem; font-size:.9rem; }
 .foot a{ text-decoration:none; color:var(--ink-2); }
 .foot a:hover{ color:var(--accent); }
@@ -399,7 +407,7 @@ button{ font:inherit; color:inherit; }
 .foot__base{
   margin-top:3rem; padding-top:1.5rem; border-top:1px solid var(--line);
   display:flex; flex-wrap:wrap; gap:.6rem 1.5rem; justify-content:space-between;
-  font-family:var(--f-data); font-size:.7rem; letter-spacing:.06em; color:var(--ink-3);
+  font-family:var(--f-body); font-size:.74rem; letter-spacing:.04em; color:var(--ink-3);
 }
 
 /* ---------- touch sizing: nothing tappable under 44px ---------- */
@@ -715,3 +723,12 @@ button{ font:inherit; color:inherit; }
   .office--susp tr{ grid-template-columns:1fr; }
   .office--susp td{ overflow-wrap:anywhere; }
 }
+
+/* ---------- store promo bar (same strip as hugheslivingco.com) ---------- */
+.promo{ background:#1B1A17; color:#FFFFFF; font-family:var(--f-body); font-size:.7rem; font-weight:600; letter-spacing:.14em; text-transform:uppercase; }
+.promo__in{ display:flex; justify-content:center; align-items:center; gap:1.6rem; min-height:40px; text-align:center; }
+.promo__in > * + *::before{ content:""; display:inline-block; width:4px; height:4px; border-radius:50%; background:#D9BC7F; margin-right:1.6rem; vertical-align:middle; }
+.promo a{ color:inherit; text-decoration:none; }
+.promo a:hover, .promo a:focus-visible{ color:#D9BC7F; }
+.promo :where(a):focus-visible{ outline-color:#D9BC7F; }
+@media (max-width:899px){ .promo__more{ display:none; } .promo{ letter-spacing:.1em; } }
